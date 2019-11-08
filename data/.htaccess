@@ -1,0 +1,8 @@
+RewriteEngine On
+
+# Transparent gzip
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule (.+)\.gz .onDemandGzip.php?file=$1 [L]
+
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule .+\.md /markdown-parser/parse-md.php?file=%{REQUEST_URI} [L,QSA]
