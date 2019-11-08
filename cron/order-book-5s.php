@@ -25,15 +25,15 @@ echo 'Received data for ' . $exchange .
      ' from host ' . $sourceHost . ' (' . $_SERVER['REMOTE_ADDR'] . ')' . PHP_EOL;
 
 if (!file_exists(CSV_FILE) || filesize(CSV_FILE) === 0) {
-	echo 'Starting new CSV.' . PHP_EOL;
-	file_put_contents(CSV_FILE, 'Unixtime,Type,Price,Amount' . PHP_EOL);
+    echo 'Starting new CSV.' . PHP_EOL;
+    file_put_contents(CSV_FILE, 'Unixtime,Type,Price,Amount' . PHP_EOL);
 }
 
 // open target file
 $csv = fopen(CSV_FILE, 'a');
 if ($csv === false) {
     http_response_code(500);
-	die('Could not open target CSV file for writing.');
+    die('Could not open target CSV file for writing.');
 }
 
 // Struct:
@@ -58,11 +58,11 @@ foreach ($dataset as $time_fragment) {
     
     foreach ($time_fragment->bids as $bid) {
         echo 'Bid @ ' . $bid[0] . PHP_EOL;
-    	fputcsv($csv, [$time, 'Bid', $bid[0], $bid[1]]);
+        fputcsv($csv, [$time, 'Bid', $bid[0], $bid[1]]);
     }
     foreach ($time_fragment->asks as $ask) {
         echo 'Ask @ ' . $ask[0] . PHP_EOL;
-    	fputcsv($csv, [$time, 'Ask', $ask[0], $ask[1]]);
+        fputcsv($csv, [$time, 'Ask', $ask[0], $ask[1]]);
     }
     
     echo 'Processed: ' . $time . PHP_EOL . PHP_EOL;

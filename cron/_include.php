@@ -46,7 +46,7 @@ function getISODate(DateTime $dateTime) : string
 function getUnixTimeWithMilliseconds(DateTime $time, int $decimals = 3) : string
 {
     $decimals = max(min($decimals, 6), 0);
-	return $time->format('U') . substr($time->format('u'), 0, $decimals);
+    return $time->format('U') . substr($time->format('u'), 0, $decimals);
 }
 
 function head(string $str, int $lines = 1, string $newLine = "\n")
@@ -72,15 +72,15 @@ function tailCustom(string $filepath, int $lines = 1, bool $adaptive = true, str
     // Open file
     $fp = fopen($filepath, 'rb');
     if ($fp === false) {
-    	return false;
+        return false;
     }
     
     // Sets buffer size, according to the number of lines to retrieve.
     // This gives a performance boost when reading a few lines from the file.
     if (!$adaptive) {
-    	$buffer = 4096;
+        $buffer = 4096;
     } else {
-    	$buffer = ($lines < 2 ? 64 : ($lines < 10 ? 512 : 4096));
+        $buffer = ($lines < 2 ? 64 : ($lines < 10 ? 512 : 4096));
     }
     
     // Determine newline length
@@ -92,7 +92,7 @@ function tailCustom(string $filepath, int $lines = 1, bool $adaptive = true, str
     // Read it and adjust line number if necessary
     // (Otherwise the result would be wrong if file doesn't end with a blank line)
     if (fread($fp, $nlLength) !== $newLine) {
-    	$lines -= $nlLength;
+        $lines -= $nlLength;
     }
     
     // Start reading
