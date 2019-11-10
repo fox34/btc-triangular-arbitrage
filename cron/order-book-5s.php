@@ -1,8 +1,8 @@
 <?php
 
-$validRequestIPs = ['94.130.181.216', '95.216.118.39', '95.216.190.114'];
+require_once '_config.php';
 
-if (!in_array($_SERVER['REMOTE_ADDR'], $validRequestIPs)) {
+if (!in_array($_SERVER['REMOTE_ADDR'], VALID_REQUEST_IPS)) {
     http_response_code(401);
     die("Access denied.");
 }
@@ -19,6 +19,8 @@ require_once '_include.php';
 $sourceHost = strtolower(basename($_POST['source_host']));
 $exchange = strtolower(basename($_POST['exchange']));
 $dot = ($sourceHost === 'drive.noecho.de') ? '' : '.'; // hide backup hosts
+
+// csv: backwards-compatibility and additional backup
 define('CSV_FILE', DATA_DIR . $dot . 'orderbook-' . $exchange . '-crawler-' . $sourceHost . '.csv');
 
 echo 'Received data for ' . $exchange .
@@ -54,7 +56,11 @@ foreach ($dataset as $time_fragment) {
     */
     
     // using unixtime saves *a lot* of disk space
+    // for consistency remove fragments of a second
     $time = $time_fragment->timestamp;
+    if (($pos = strpos($time, '.')) !== false) {
+        $time = substr($time, 0, $pos);
+    }
     
     foreach ($time_fragment->bids as $bid) {
         echo 'Bid @ ' . $bid[0] . PHP_EOL;
@@ -70,3 +76,73 @@ foreach ($dataset as $time_fragment) {
 
 fclose($csv);
 
+// New: Insert to Database
+// getPDO() defined in config.php
+/** @var \PDO $pdo */
+$pdo = getPDO();
+
+$query = 'INSERT INTO order_books (book_time, exchange_name, source_host, type, price, amount) VALUES ';
+$pdo_data = [];
+
+// build query
+$first = true;
+foreach ($dataset as $time_fragment) {
+    
+    if (strpos($time_fragment->timestamp, '.') !== false) {
+        $timestamp = \DateTime::createFromFormat('U.u', $time_fragment->timestamp);
+    } else {
+        $timestamp = \DateTime::createFromFormat('U', $time_fragment->timestamp);
+    }
+    
+    $time = $timestamp->format('Y-m-d H:i:s.u');
+    
+    foreach ($time_fragment->bids as $bid) {
+        echo 'Bid @ ' . $bid[0] . PHP_EOL;
+        
+        if (!$first) {
+            $query .= ',';
+        } else {
+            $first = false;
+        }
+        
+        $query .= '(?, ?, ?, ?, ?, ?)';
+        $pdo_data = array_merge($pdo_data, [
+            $time,
+            $exchange,
+            $sourceHost,
+            'bid',
+            $bid[0],
+            $bid[1]
+        ]);
+    }
+    foreach ($time_fragment->asks as $ask) {
+        echo 'Ask @ ' . $ask[0] . PHP_EOL;
+        
+        if (!$first) {
+            $query .= ',';
+        } else {
+            $first = false;
+        }
+        
+        $query .= '(?, ?, ?, ?, ?, ?)';
+        $pdo_data = array_merge($pdo_data, [
+            $time,
+            $exchange,
+            $sourceHost,
+            'ask',
+            $ask[0],
+            $ask[1]
+        ]);
+    }
+    
+    echo 'Processed: ' . $time . PHP_EOL . PHP_EOL;
+}
+
+$stmt = $pdo->prepare($query);
+
+try {
+    $stmt->execute($pdo_data);
+} catch (\PDOException $e) {
+    http_response_code(500);
+    echo $e->getMessage();
+}
