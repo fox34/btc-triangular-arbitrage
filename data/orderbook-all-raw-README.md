@@ -1,0 +1,69 @@
+# Auftragsbücher für verschiedene Börsen
+
+## Datenbeschreibung
+
+Auftragsbücher wichtiger Bitcoin-Börsen im Abstand von fünf Sekunden.
+Abfrage erfolgt durch einen in python geschriebenen Crawler.
+Nach je fünf Minuten werden die Daten aggregiert in der zugehörigen .csv gespeichert.
+Mehrere Aufträge mit dem selben Preislimit werden automatisch (durch die Börsen) aggregiert.
+Diese Rohdaten enthalten ggf. Duplikate, da zur Sicherheit mehrere unabhängige Crawler zum
+Einsatz kommen.
+Eine Bereinigung der Daten vor Verwendung ist daher unerlässlich.
+Die Quelldaten werden zunächst in einer Datenbank zwischengespeichert und nach zwei Tagen
+in die .csv.gz geschrieben.
+
+
+### Bitstamp
+
+- Referenz: https://www.bitstamp.net/api/
+- Abfrage folgender URLs:
+    - https://www.bitstamp.net/api/v2/order_book/btcusd
+    - https://www.bitstamp.net/api/v2/order_book/btceur
+- Abfrageintervall: 5 Sekunden
+
+### Bitfinex
+
+- Referenz: https://docs.bitfinex.com/reference#rest-public-books
+- Abfrage folgender URLs:
+    - https://api-pub.bitfinex.com/v2/book/tBTCUSD/P0?len=25
+    - https://api-pub.bitfinex.com/v2/book/tBTCEUR/P0?len=25
+- Abfrageintervall: 5 Sekunden
+
+### Coinbase
+
+- Referenz: https://docs.pro.coinbase.com/#get-product-order-book
+- Abfrage folgender URLs:
+    - https://api.pro.coinbase.com/products/BTC-USD/book?level=2
+    - https://api.pro.coinbase.com/products/BTC-EUR/book?level=2
+- Abfrageintervall: 5 Sekunden
+
+
+## Dateistruktur (für alle Börsen identisch)
+
+Sortiert nach Datum + Uhrzeit.
+Dann zunächst Bid (Geldkurs) nach Preis absteigend, danach Ask (Briefkurs) nach Preis aufsteigend.
+Jeweils die besten zehn Geld- und Briefkurse je Abfrageintervall.
+
+- Zeitstempel mit einer Genauigkeit von 0,01 Sekunden
+- Börse (bitstamp_usd/eur, bitfinex_usd/eur, coinbase_usd/eur)
+- Datenquelle (MAIN_CRAWLER, BACKUP_CRAWLER_1, ..., BACKUP_CRAWLER_n)
+- Art (Geld-/Briefkurs)
+- Gesetztes Limit
+- Auftragsgröße
+
+---
+    TimeUTC,Exchange,Source,Type,Price,Amount
+    2019-11-10 10:12:50.05,bitstamp_usd,MAIN_CRAWLER,bid,8830.2400,0.12000000
+    2019-11-10 10:12:50.05,bitstamp_usd,MAIN_CRAWLER,bid,8827.0000,5.65720000
+    ...
+    2019-11-10 10:12:50.05,bitstamp_usd,MAIN_CRAWLER,ask,8841.0500,6.00000000
+    2019-11-10 10:12:50.05,bitstamp_usd,MAIN_CRAWLER,ask,8841.0600,1.00000000
+    2019-11-10 10:12:50.05,bitstamp_eur,MAIN_CRAWLER,bid,8010.6000,2.00000000
+    2019-11-10 10:12:50.05,bitstamp_eur,MAIN_CRAWLER,bid,8010.5900,0.35000000
+    ...
+    2019-11-10 10:14:40.20,coinbase_usd,MAIN_CRAWLER,ask,8832.9300,2.00000000
+    2019-11-10 10:14:40.20,coinbase_usd,MAIN_CRAWLER,ask,8833.3900,0.06000000
+    2019-11-10 10:14:40.25,bitstamp_usd,BACKUP_CRAWLER_2,bid,8831.9600,0.04621000
+    2019-11-10 10:14:40.25,bitstamp_usd,BACKUP_CRAWLER_2,bid,8830.0900,0.12000000
+    ...
+---

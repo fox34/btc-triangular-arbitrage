@@ -83,7 +83,7 @@ while ($order = $stmt->fetch(\PDO::FETCH_NUM)) {
 $stmt->closeCursor();
 
 $result = gzencode($result, 9);
-echo 'Collected ' . number_format($stmt->rowCount(), 0, ',', '.') . ' datasets. Writing ' . round(strlen($result)/1024) . ' kB gzip to target file.' . PHP_EOL;
+echo 'Collected ' . number_format($stmt->rowCount(), 0, ',', '.') . ' datasets up to ' . $queryUntil->format('Y-m-d H:i:s.u') . '. Writing ' . round(strlen($result)/1024) . ' kB gzip to target file.' . PHP_EOL;
 file_put_contents(CSV_FILE, $result, FILE_APPEND);
 
 // Aufräumen
