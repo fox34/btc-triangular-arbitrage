@@ -2,16 +2,15 @@
 
 ## Datenbeschreibung
 
-Auftragsbücher wichtiger Bitcoin-Börsen im Abstand von fünf Sekunden.
-Abfrage erfolgt durch einen in python geschriebenen Crawler.
-Nach je fünf Minuten werden die Daten aggregiert in der zugehörigen .csv gespeichert.
+Auftragsbücher mit den Top-10 Bids und Asks wichtiger Bitcoin-Börsen im Abstand von fünf Sekunden.
 Mehrere Aufträge mit dem selben Preislimit werden automatisch (durch die Börsen) aggregiert.
-Diese Rohdaten enthalten ggf. Duplikate, da zur Sicherheit mehrere unabhängige Crawler zum
-Einsatz kommen.
+Diese Rohdaten enthalten ggf. Duplikate, da zur Sicherheit mehrere unabhängige Crawler zum Einsatz kommen.
 Eine Bereinigung der Daten vor Verwendung ist daher unerlässlich.
 Die Quelldaten werden zunächst in einer Datenbank zwischengespeichert und nach zwei Tagen
 in die .csv.gz geschrieben.
 
+Manche Börsen liefern die Daten erst nach mehr als einer Sekunde zurück (v.a. Coinbase).
+Die so entstehenden Lücken von 1-3 Sekunden sollten berücksichtigt oder zumindest erwähnt werden.
 
 ### Bitstamp
 
@@ -38,18 +37,18 @@ in die .csv.gz geschrieben.
 - Abfrageintervall: 5 Sekunden
 
 
-## Dateistruktur (für alle Börsen identisch)
+## Dateistruktur
 
 Sortiert nach Datum + Uhrzeit.
 Dann zunächst Bid (Geldkurs) nach Preis absteigend, danach Ask (Briefkurs) nach Preis aufsteigend.
 Jeweils die besten zehn Geld- und Briefkurse je Abfrageintervall.
 
-- Zeitstempel mit einer Genauigkeit von 0,01 Sekunden
+- Abfrage-Zeitstempel mit einer Genauigkeit von 0,01 Sekunden
 - Börse (bitstamp_usd/eur, bitfinex_usd/eur, coinbase_usd/eur)
 - Datenquelle (MAIN_CRAWLER, BACKUP_CRAWLER_1, ..., BACKUP_CRAWLER_n)
 - Art (Geld-/Briefkurs)
-- Gesetztes Limit
-- Auftragsgröße
+- Gesetztes Limit in USD bzw. EUR
+- Auftragsgröße in BTC (bis auf 1 satoshi = 1/8 genau)
 
 ---
     TimeUTC,Exchange,Source,Type,Price,Amount

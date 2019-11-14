@@ -53,6 +53,14 @@ $stmt = $pdo->prepare('
 $bookTimeLimit = clone $lastBook;
 $bookTimeLimit->add(new \DateInterval('PT1H30M'));
 
+// Maximal aber bis 6min vor aktueller Zeit,
+// um allen Crawlern die Gelegenheit zu geben, fehlende Daten noch zu übertragen
+$beforeCurrent = new \DateTime();
+$beforeCurrent->sub(new \DateInterval('PT6M'));
+
+$bookTimeLimit = min($bookTimeLimit, $beforeCurrent);
+
+
 echo 'Processing until ' . $bookTimeLimit->format('Y-m-d H:i:s') . PHP_EOL;
 
 try {
