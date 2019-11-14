@@ -131,3 +131,14 @@ function tailCustom(string $filepath, int $lines = 1, bool $adaptive = true, str
     
     return trim($output);
 }
+
+function formatFileSize(float $size) : string
+{
+    $sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
+    for ($i = 0; $size >= 1024 && $i < (count($sizes) - 1); $i++) {
+        $size /= 1024;
+    }
+
+    $length = strpos((string)$size, '.');
+    return str_replace('.', ',', round($size, 3 - $length)) . ' ' . $sizes[$i];
+}

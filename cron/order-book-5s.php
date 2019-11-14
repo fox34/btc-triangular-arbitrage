@@ -18,13 +18,23 @@ require_once '_include.php';
 
 $sourceHost = strtolower(basename($_POST['source_host']));
 $exchange = strtolower(basename($_POST['exchange']));
+
+echo 'Received data for ' . $exchange .
+     ' from host ' . $sourceHost . ' (' . $_SERVER['REMOTE_ADDR'] . ')' . PHP_EOL;
+
+// JSON parsen
+try {
+    $dataset = json_decode($_POST['raw_data'], false, 512, JSON_THROW_ON_ERROR);
+} catch (\JsonException $e) {
+    http_response_code(400);
+    die('Could not parse provided data as JSON.');
+}
+
+/*
 $dot = ($sourceHost === 'drive.noecho.de') ? '' : '.'; // hide backup hosts
 
 // csv: backwards-compatibility and additional backup
 define('CSV_FILE', DATA_DIR . $dot . 'orderbook-' . $exchange . '-crawler-' . $sourceHost . '.csv');
-
-echo 'Received data for ' . $exchange .
-     ' from host ' . $sourceHost . ' (' . $_SERVER['REMOTE_ADDR'] . ')' . PHP_EOL;
 
 if (!file_exists(CSV_FILE) || filesize(CSV_FILE) === 0) {
     echo 'Starting new CSV.' . PHP_EOL;
@@ -38,22 +48,8 @@ if ($csv === false) {
     die('Could not open target CSV file for writing.');
 }
 
-// Struct:
-try {
-    $dataset = json_decode($_POST['raw_data'], false, 512, JSON_THROW_ON_ERROR);
-} catch (\JsonException $e) {
-    http_response_code(400);
-    die('Could not parse provided data as JSON.');
-}
-
 // build result
 foreach ($dataset as $time_fragment) {
-    
-    /*
-    $timestamp = new \DateTime();
-    $timestamp->setTimestamp($time_fragment->timestamp);
-    $time = getISODate($timestamp);
-    */
     
     // using unixtime saves *a lot* of disk space
     // for consistency remove fragments of a second
@@ -75,8 +71,10 @@ foreach ($dataset as $time_fragment) {
 }
 
 fclose($csv);
+*/
 
-// New: Insert to Database
+// Umweg über Datenbank: Bessere Suche und Aggregation, außerdem zeitlich korrekte Reihenfolge
+// der Daten auch bei verschiedenen Datenquellen (Backup-Crawler)
 // getPDO() defined in config.php
 /** @var \PDO $pdo */
 $pdo = getPDO();

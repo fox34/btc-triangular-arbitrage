@@ -1,4 +1,6 @@
+/data/*.7z
 /data/*.csv
+/data/*.gz
 /data/*.json
 /cron/_config.php
 *.log

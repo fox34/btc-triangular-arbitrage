@@ -1,5 +1,8 @@
 <?php
 
+// Aggregiere identische Backup-Daten zu einem konsistenten Datensatz für jede Börse
+// Behalte nur jeweils beste Bid+Ask-Orders
+
 require_once '_config.php';
 require_once '_include.php';
 
@@ -28,7 +31,7 @@ if ($lastInfoStmt->rowCount() > 0) {
     
 } else {
     
-    // Leere Datenbank: Starte mit erstem Datensatz
+    // Datenbank ist leer: Starte mit erstem Datensatz
     $lastInfoStmt = $pdo->query('SELECT book_time FROM order_books ORDER BY book_time ASC LIMIT 1');
     $lastBook = $lastInfoStmt->fetchColumn(0);
     $lastBook = \DateTime::createFromFormat('Y-m-d H:i:s.u', $lastBook);
