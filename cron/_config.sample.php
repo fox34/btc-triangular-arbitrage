@@ -30,7 +30,7 @@ Datenbank-Tabellenstrukturen:
 CREATE TABLE `order_books` (
   `book_time` datetime(2) NOT NULL COMMENT 'Zeitstempel der Abfrage, Zeitzone UTC (!)',
   `exchange_name` enum('bitfinex_usd','bitfinex_eur','bitstamp_usd','bitstamp_eur','coinbase_usd','coinbase_eur') NOT NULL,
-  `source_host` enum('drive.noecho.de','ctrl.7c6.de','ded-2.7c6.de') NOT NULL,
+  `source_host` enum('drive.noecho.de') NOT NULL,
   `type` enum('bid','ask') NOT NULL,
   `price` decimal(10,4) NOT NULL COMMENT 'Preis typischerweise in xxxx.yy, aber zur Sicherheit etwas Puffer: xxxxxx.yyyy',
   `amount` decimal(16,8) NOT NULL COMMENT 'Bitcoins bis zu 1 sat (1/8)',
