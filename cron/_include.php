@@ -60,8 +60,7 @@ function head(string $str, int $lines = 1, string $newLine = "\n")
 
 
 // Read last chunk of concatenated gzip file: Search for magic number 1f 8b
-// Does not work for random-access gzip files, since gzip needs all data for uncompression
-// Limited performance. Use only for smaller chunks of data.
+// Poor performance. Use only for smaller chunks of data.
 // Limited to maximum 1MB of compressed data (uncompressed data may be larger)
 function gzfile_get_last_chunk_of_concatenated_file(string $file, int $readLimit = 1000000) : string
 {
@@ -79,31 +78,31 @@ function gzfile_get_last_chunk_of_concatenated_file(string $file, int $readLimit
     $counter = 0;
     
     // Read chunks of 2 bytes and compare with magic number
-    while (($seq = fread($fp, 2)) && $counter < $readLimit) {
+    while (($seq = fread($fp, 2)) && $counter++ < $readLimit) {
         
-        // magic number found, trying...
-        if (bin2hex($seq) === '1f8b') {
-            
-            $pos = ftell($fp);
-            $gzdata = $seq;
-            while ($chunk = fread($fp, 1024)) {
-                $gzdata .= $chunk;
-            }
-            
-            $data = @gzdecode($gzdata);
-            
-            // Magic number appeared in compressed content??
-            if ($data === false) {
-                $data = '';
-                $counter++;
-                fseek($fp, $pos - 3);
-            } else {        
-                break;
-            }
-            
-        } else {
-            $counter++;
+        // magic number not matched
+        if (bin2hex($seq) !== '1f8b') {
             fseek($fp, -3, SEEK_CUR);
+            continue;
+        }
+        
+        $pos = ftell($fp);
+        $gzdata = $seq;
+        
+        // Read all remaining data
+        while ($chunk = fread($fp, 1024)) {
+            $gzdata .= $chunk;
+        }
+        
+        // Try decoding data
+        $data = @gzdecode($gzdata);
+        
+        // Could not decode data. Maybe magic number appeared inside compressed content?
+        if ($data === false) {
+            $data = '';
+            fseek($fp, $pos - 3);
+        } else {        
+            break;
         }
     }
     fclose($fp);
