@@ -1,17 +1,21 @@
 # Bitfinex Tickdaten und 60s-OHLC-Daten
 
 ## Tickdaten
-### Beschreibung
-The trades endpoint allows the retrieval of past public trades and includes details such as price, size, and time.
 
-- Referenz: https://docs.bitfinex.com/reference#rest-public-trades
+> The trades endpoint allows the retrieval of past public trades and includes
+> details such as price, size, and time.
+>@ https://docs.bitfinex.com/reference#rest-public-trades
+
+
+### API
+
 - Abfrage folgender URL: https://api-pub.bitfinex.com/v2/trades/tBTCUSD/hist
-- Abfrage alle 2min
+- Aktualisierung erfolgt alle 2 Minuten
 
 ### Dateistruktur
 - Vorgangs-ID
-- Datum inkl. Millisekunden
-- Gehandelte Menge ("How much was bought (positive) or sold (negative).")
+- Datum ([UTC](https://de.wikipedia.org/wiki/Koordinierte_Weltzeit))
+- Gehandelte Menge in BTC ("How much was bought (positive) or sold (negative).")
 - Preis in USD
 
 ---
@@ -25,23 +29,26 @@ The trades endpoint allows the retrieval of past public trades and includes deta
 
 
 
+
 ## 60s OHLC (Candles)
-### Beschreibung
-The Candles endpoint provides chart candles for a specified time frame and period. 
+
+> The Candles endpoint provides chart candles for a specified time frame and period. 
+>@ https://docs.bitfinex.com/reference#rest-public-candles
 
 Höchste Auflösung ist 1min.
 
-- Referenz: https://docs.bitfinex.com/reference#rest-public-candles
-- Abfrage folgender URL: https://api-pub.bitfinex.com/v2/candles/trade:1m:tBTCUSD/hist
-- Abfrage alle 6h
+### API
 
-### Dateistruktur:
-- Datum
-- Open
-- Close
-- Höchstkurs
-- Tiefstkurs
-- Gehandeltes Volumen
+- Abfrage folgender URL: https://api-pub.bitfinex.com/v2/candles/trade:1m:tBTCUSD/hist
+- Aktualisierung erfolgt alle 6 Stunden
+
+### Dateistruktur
+- Datum ([UTC](https://de.wikipedia.org/wiki/Koordinierte_Weltzeit))
+- Eröffnungskurs in USD
+- Schlusskurs in USD
+- Höchstkurs in USD
+- Tiefstkurs in USD
+- Gehandeltes Volumen in BTC
 
 ---
     Time,Open,Close,High,Low,Volume

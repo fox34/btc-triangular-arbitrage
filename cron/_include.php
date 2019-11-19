@@ -58,6 +58,59 @@ function head(string $str, int $lines = 1, string $newLine = "\n")
     return $result;
 }
 
+
+// Read last chunk of concatenated gzip file: Search for magic number 1f 8b
+// Does not work for random-access gzip files, since gzip needs all data for uncompression
+// Limited performance. Use only for smaller chunks of data.
+// Limited to maximum 1MB of compressed data (uncompressed data may be larger)
+function gzfile_get_last_chunk_of_concatenated_file(string $file, int $readLimit = 1000000) : string
+{
+    // Limit to 1MB
+    $readLimit = min($readLimit, 1e6);
+    
+    $fp = fopen($file, 'rb');
+    if ($fp === false) {
+        throw new Exception('Could not read file.');
+    }
+    
+    fseek($fp, -2, SEEK_END);
+    $gzdata = '';
+    $data = '';
+    $counter = 0;
+    
+    // Read chunks of 2 bytes and compare with magic number
+    while (($seq = fread($fp, 2)) && $counter < $readLimit) {
+        
+        // magic number found, trying...
+        if (bin2hex($seq) === '1f8b') {
+            
+            $pos = ftell($fp);
+            $gzdata = $seq;
+            while ($chunk = fread($fp, 1024)) {
+                $gzdata .= $chunk;
+            }
+            
+            $data = @gzdecode($gzdata);
+            
+            // Magic number appeared in compressed content??
+            if ($data === false) {
+                $data = '';
+                $counter++;
+                fseek($fp, $pos - 3);
+            } else {        
+                break;
+            }
+            
+        } else {
+            $counter++;
+            fseek($fp, -3, SEEK_CUR);
+        }
+    }
+    fclose($fp);
+    
+    return $data;
+}
+
 // Source: https://gist.github.com/lorenzos/1711e81a9162320fde20
 // Chosen by: https://stackoverflow.com/a/15025877
 // modified by S. Manzer for custom newLines

@@ -1,16 +1,22 @@
-# Bitcoincharts API - Tickdaten von Bitstamp
+# Bitcoincharts
 
-## Datenbeschreibung
-https://bitcoincharts.com/about/markets-api/
+> Bitcoincharts provides a simple API to most of its data.  
+> [...]  
+> **Historic Trade Data**  
+> Trade data is available as CSV, delayed by approx. 15 minutes. It will return the 2000 most recent trades.  
+>@ https://bitcoincharts.com/about/markets-api/
+
 
 ## API
-- http://api.bitcoincharts.com/v1/trades.csv?symbol=bitstampUSD
-- http://api.bitcoincharts.com/v1/trades.csv?symbol=bitstampEUR
-- Abfrage alle 15-16min
+- Nutzung folgender Adressen:
+    - http://api.bitcoincharts.com/v1/trades.csv?symbol=bitstampUSD
+    - http://api.bitcoincharts.com/v1/trades.csv?symbol=bitstampEUR
+- Aktualisierung erfolgt alle 15-16min
 
 
 ## Dateistruktur
-- Datum
+
+- Datum ([UTC](https://de.wikipedia.org/wiki/Koordinierte_Weltzeit))
 - Preis in USD bzw. EUR
 - Menge in BTC
 

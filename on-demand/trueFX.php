@@ -40,8 +40,8 @@ $outPath = 'TrueFX/';
 //$outPath = '/mnt/union/Backup/Dissertation/TrueFX/';
 
 
-$forexFilter = 'AUDJPY|AUDUSD|EURGBP|EURJPY|EURUSD|GBPJPY|GBPUSD|USDJPY';
-//$forexFilter = 'EURUSD';
+//$forexFilter = 'AUDJPY|AUDUSD|EURGBP|EURJPY|EURUSD|GBPJPY|GBPUSD|USDJPY';
+$forexFilter = 'EURUSD';
 
 $context = stream_context_create([
     'http' => [

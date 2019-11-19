@@ -1,16 +1,21 @@
 # Bitcoin Composite Price Index (BCX)
 
-## Datenbeschreibung
-https://index.bitcoin.com
+> The Bitcoin.com Composite Price Index (BCX) is a daily historical price index that
+> tracks the value of Bitcoin in United States Dollars.  
+> [...]  
+> The BCX is a composite of multiple Bitcoin indices, providing a robust measurement
+> of Bitcoin's value. Downtime or API changes on any one exchange or constituent index
+> will not drastically alter the quality of the BCX.
+>@ https://index.bitcoin.com
 
 ## API
-- Abfrage folgender URL: https://index-api.bitcoin.com/api/v0/history?unix=1
-- Abfrage erfolgt 1x täglich 08:10
+- Nutzung folgender Adresse: https://index-api.bitcoin.com/api/v0/history?unix=1
+- Aktualisierung erfolgt täglich um 08:10
 
-## Dateistruktur / Spalten
+## Dateistruktur
 
-- Datum
-- Tagesschlusskurs
+- Datum ([UTC](https://de.wikipedia.org/wiki/Koordinierte_Weltzeit))
+- Tagesschlusskurs in USD
 
 ---
     Time,Close

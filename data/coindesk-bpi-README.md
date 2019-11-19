@@ -1,20 +1,21 @@
 # Coindesk Bitcoin Price Index
 
-Referenz: https://www.coindesk.com/price/bitcoin-price-index
-
-Launched in September 2013, the CoinDesk Bitcoin Price Index (XBP) represents an average
-of bitcoin prices across leading global exchanges that meet criteria specified by the XBP.
-It is intended to serve as a standard retail price reference for industry participants and
-accounting professionals.
+> Launched in September 2013, the CoinDesk Bitcoin Price Index (XBP) represents an average
+> of bitcoin prices across leading global exchanges that meet criteria specified by the XBP.
+> It is intended to serve as a standard retail price reference for industry participants and
+> accounting professionals.
+>@ https://www.coindesk.com/price/bitcoin-price-index
 
 ## 60s Close
-### Beschreibung
+### API
 - Abfrage folgender URL: https://api.coindesk.com/charts/data?data=close&exchanges=bpi&index=USD&dev=1
-- Abfrage täglich 08:07
+- Aktualisierung erfolgt täglich um 08:07
+- Aufgrund der Nutzung einer internen API können bei kurzfristigen Änderungen vorübergehend Lücken entstehen.
+
 
 ### Dateistruktur
-- Datum
-- BPI-Wert
+- Datum ([UTC](https://de.wikipedia.org/wiki/Koordinierte_Weltzeit))
+- Aktueller Wert des BPI in USD
 
 ---
     Time,Close
@@ -27,16 +28,19 @@ accounting professionals.
 
 
 ## 15min OHLC
-### Beschreibung
+
+### API
 - Abfrage folgender URL: https://api.coindesk.com/charts/data?data=ohlc&exchanges=bpi&index=USD&dev=1
-- Abfrage täglich 08:05
+- Aktualisierung erfolgt täglich um 08:05
+- Aufgrund der Nutzung einer internen API können bei kurzfristigen Änderungen vorübergehend Lücken entstehen.
+
 
 ### Dateistruktur
-- Datum
-- Open
-- Höchstkurs
-- Tiefstkurs
-- Schlusskurs
+- Datum ([UTC](https://de.wikipedia.org/wiki/Koordinierte_Weltzeit))
+- Eröffnungskurs in USD
+- Höchstkurs in USD
+- Tiefstkurs in USD
+- Schlusskurs in USD
 
 ---
     Time,Open,High,Low,Close

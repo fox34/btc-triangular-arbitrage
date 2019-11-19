@@ -30,49 +30,6 @@ try {
     die('Could not parse provided data as JSON.');
 }
 
-/*
-$dot = ($sourceHost === 'drive.noecho.de') ? '' : '.'; // hide backup hosts
-
-// csv: backwards-compatibility and additional backup
-define('CSV_FILE', DATA_DIR . $dot . 'orderbook-' . $exchange . '-crawler-' . $sourceHost . '.csv');
-
-if (!file_exists(CSV_FILE) || filesize(CSV_FILE) === 0) {
-    echo 'Starting new CSV.' . PHP_EOL;
-    file_put_contents(CSV_FILE, 'Unixtime,Type,Price,Amount' . PHP_EOL);
-}
-
-// open target file
-$csv = fopen(CSV_FILE, 'a');
-if ($csv === false) {
-    http_response_code(500);
-    die('Could not open target CSV file for writing.');
-}
-
-// build result
-foreach ($dataset as $time_fragment) {
-    
-    // using unixtime saves *a lot* of disk space
-    // for consistency remove fragments of a second
-    $time = $time_fragment->timestamp;
-    if (($pos = strpos($time, '.')) !== false) {
-        $time = substr($time, 0, $pos);
-    }
-    
-    foreach ($time_fragment->bids as $bid) {
-        echo 'Bid @ ' . $bid[0] . PHP_EOL;
-        fputcsv($csv, [$time, 'Bid', $bid[0], $bid[1]]);
-    }
-    foreach ($time_fragment->asks as $ask) {
-        echo 'Ask @ ' . $ask[0] . PHP_EOL;
-        fputcsv($csv, [$time, 'Ask', $ask[0], $ask[1]]);
-    }
-    
-    echo 'Processed: ' . $time . PHP_EOL . PHP_EOL;
-}
-
-fclose($csv);
-*/
-
 // Umweg über Datenbank: Bessere Suche und Aggregation, außerdem zeitlich korrekte Reihenfolge
 // der Daten auch bei verschiedenen Datenquellen (Backup-Crawler)
 // getPDO() defined in config.php

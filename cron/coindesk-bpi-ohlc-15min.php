@@ -2,29 +2,43 @@
 
 require_once '_include.php';
 
-define('TICK_API', 'https://api.coindesk.com/charts/data');
-define('TICK_CSV', DATA_DIR . 'coindesk-bpi-ohlc-15min.csv');
+define('API_URL', 'https://api.coindesk.com/charts/data');
+define('CSV_FILE', DATA_DIR . 'coindesk-bpi-ohlc-15min.csv.gz');
 
 echo 'Processing 15m OHLC...' . PHP_EOL;
 
-// CSV format:
-// Timestamp (ms); Amount, Price
-if (!file_exists(TICK_CSV) || filesize(TICK_CSV) === 0) {
+// CSV existiert nicht
+if (!file_exists(CSV_FILE) || filesize(CSV_FILE) === 0) {
     
     die('Target CSV not found.');
     
     // fresh start
+    file_put_contents(CSV_FILE, gzencode('Time,Open,High,Low,Close', 9) . PHP_EOL);
     $lastDataset = new DateTime('2010-07-18');
     
 } else {
     
-    echo 'Reading last dataset from CSV: ' . TICK_CSV . PHP_EOL;
+    // Lese letzten Datensatz
+    echo 'Reading last dataset from CSV: ' . CSV_FILE . PHP_EOL;
     
-    // read last dataset
-    $lastLine = tailCustom(TICK_CSV);
-    if ($lastLine === false || empty($lastLine)) {
-        die('Could not read CSV.');
+    // Lese letzten Datensatz
+    // Typischerweise nicht mehr als 10 kb an komprimierten Daten, bis zu 1MB zur Sicherheit lesen
+    $lastChunk = gzfile_get_last_chunk_of_concatenated_file(CSV_FILE);
+    if (empty($lastChunk)) {
+        die('Could not read last chunk from CSV.');
     }
+
+    $chunkLines = explode(PHP_EOL, $lastChunk);
+    $lastLine = array_pop($chunkLines);
+    
+    // last line is empty
+    if ($lastLine === '') {
+        $lastLine = array_pop($chunkLines);
+    }
+    
+    // Speicher wieder freigeben
+    unset($lastChunk, $chunkLines);
+    
     $lastLine = str_getcsv($lastLine);
     
     try {
@@ -32,6 +46,11 @@ if (!file_exists(TICK_CSV) || filesize(TICK_CSV) === 0) {
     } catch (Exception $e) {
         die('Could not parse last dataset: ' . $lastLine[0]);
     }
+}
+
+// CSV nicht beschreibbar
+if (!is_writeable(CSV_FILE)) {
+    die('Could not open target CSV file for writing.');
 }
 
 echo 'Last dataset:          ' . $lastDataset->format('Y-m-d H:i') . PHP_EOL;
@@ -50,7 +69,7 @@ if ($requestedDay >= (new DateTime())->setTime(0, 0, 0)) {
 }
 
 
-$url = TICK_API . '?' . http_build_query([
+$url = API_URL . '?' . http_build_query([
     'data' => 'ohlc',
     'startdate' => $requestedDay->format('Y-m-d'),
     'enddate' => $requestedDayEnd->format('Y-m-d'),
@@ -85,18 +104,11 @@ if (empty($data)) {
 }
 
 
-// open target file
-$csv = fopen(TICK_CSV, 'a');
-if ($csv === false) {
-    die('Could not open target CSV file for writing.');
-}
-
-
-// build new lines
+// Ergebnis zusammenstellen
+$result = '';
 foreach ($data as $tick) {
     
     $tick = array_combine(['Time', 'Open', 'High', 'Low', 'Close'], $tick);
-    
     $time = DateTime::createFromFormat('U.u', sprintf('%f', $tick['Time'] / 1000));
     
     // skip datasets out of range
@@ -110,9 +122,12 @@ foreach ($data as $tick) {
     
     $tick['Time'] = getISODate($time);
     
-    fputcsv($csv, array_values($tick));
+    $result .= implode(',', array_values($tick)) . PHP_EOL;
 }
 
-fclose($csv);
+$result = gzencode($result, 9);
+echo 'Collected ' . number_format(count($data), 0, ',', '.') . ' datasets. Writing ' . round(strlen($result)/1024) . ' kB gzip to target file.' . PHP_EOL;
+
+file_put_contents(CSV_FILE, $result, FILE_APPEND);
 
 
