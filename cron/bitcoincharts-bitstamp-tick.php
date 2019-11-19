@@ -2,33 +2,50 @@
 
 require_once '_include.php';
 
-$src = $_GET['src'] ?? 'USD';
-if ($src !== 'EUR' && $src !== 'USD') die("Invalid source.");
+$src = $_GET['src'] ?? '';
+if ($src !== 'EUR' && $src !== 'USD') {
+    die('Invalid source.');
+}
 
-$apiURL = 'http://api.bitcoincharts.com/v1/trades.csv?symbol=bitstamp' . $src;
-$dataFile = DATA_DIR . 'bitcoincharts-bitstamp-' . strtolower($src) . '-tick.csv';
+define('API_URL', 'http://api.bitcoincharts.com/v1/trades.csv?symbol=bitstamp' . $src);
+define('CSV_FILE', DATA_DIR . 'bitcoincharts-bitstamp-' . strtolower($src) . '-tick.csv.gz');
 
 echo 'Processing bitstamp' . $src . ' Ticks...' . PHP_EOL;
 
 // CSV format:
 // Timestamp (ms); Amount, Price
-if (!file_exists($dataFile) || filesize($dataFile) === 0) {
+if (!file_exists(CSV_FILE) || filesize(CSV_FILE) === 0) {
     
     die('Target CSV not found.');
+    file_put_contents(CSV_FILE, gzencode('Time,Price,Amount', 9) . PHP_EOL);
     
 } else {
     
-    echo 'Reading last dataset from CSV: ' . $dataFile . PHP_EOL;
+    echo 'Reading last dataset from CSV: ' . CSV_FILE . PHP_EOL;
     
-    // read last 10 datasets for comparison with latest tick data in the same second,
-    // since we don't get any microseconds, just ticks with same time
-    $lastLines = tailCustom($dataFile, 10);
-    if ($lastLines === false || empty($lastLines)) {
-        die('Could not read CSV.');
+    // Lese letzten Datensatz
+    // Typischerweise nicht mehr als 10 kb an komprimierten Daten, bis zu 1MB zur Sicherheit lesen
+    $lastChunk = gzfile_get_last_chunk_of_concatenated_file(CSV_FILE);
+    if (empty($lastChunk)) {
+        die('Could not read last chunk from CSV.');
     }
-    $lastLines = explode("\n", $lastLines);
+
+    $lastLines = explode(PHP_EOL, $lastChunk);
     
-    $lastLine = str_getcsv(end($lastLines));
+    // Speicher wieder freigeben
+    unset($lastChunk);
+    
+    
+    $lastLine = end($lastLines);
+    
+    // last line is empty
+    if ($lastLine === '') {
+        array_pop($lastLines);
+        $lastLine = end($lastLines);
+    }
+    
+    $lastLines = array_slice($lastLines, -10);
+    $lastLine = str_getcsv($lastLine);
     
     try {
         $lastDataset = readISODate($lastLine[0]);
@@ -37,24 +54,24 @@ if (!file_exists($dataFile) || filesize($dataFile) === 0) {
     }
 }
 
-echo 'Last dataset: ' . $lastDataset->format('Y-m-d H:i:s') . PHP_EOL;
-echo 'Querying ' . $apiURL . PHP_EOL;
+// CSV nicht beschreibbar
+if (!is_writeable(CSV_FILE)) {
+    die('Could not open target CSV file for writing.');
+}
 
-$data = file($apiURL);
+echo 'Last dataset: ' . $lastDataset->format('Y-m-d H:i:s') . PHP_EOL;
+echo 'Querying ' . API_URL . PHP_EOL;
+
+$data = file(API_URL);
 if (empty($data)) {
     die('Could not read response.');
 }
 echo 'Received '. count($data) . ' datasets.' . PHP_EOL . PHP_EOL;
 $data = array_reverse($data);
 
-// open target file
-$csv = fopen($dataFile, 'a');
-if ($csv === false) {
-    die('Could not open target CSV file for writing.');
-}
-
 
 // build new lines
+$result = '';
 $newDatasets = 0;
 foreach ($data as $line) {
     
@@ -99,9 +116,11 @@ foreach ($data as $line) {
          'Price: ' . asPrice($tick['Price']) . ' ' . $src . '' . ', ' . $tick['Amount'] . ' BTC' . PHP_EOL;
     
     $newDatasets++;
-    fputcsv($csv, [getISODate($time), $tick['Price'], $tick['Amount']]);
+    $result .= implode(',', [getISODate($time), $tick['Price'], $tick['Amount']]) . PHP_EOL;
 }
 
-fclose($csv);
+$result = gzencode($result, 9);
+echo 'Collected ' . number_format($newDatasets, 0, ',', '.') . ' datasets. Writing ' . round(strlen($result)/1024) . ' kB gzip to target file.' . PHP_EOL;
 
-echo 'Finished. ' . $newDatasets . ' new datasets.' . PHP_EOL;
+file_put_contents(CSV_FILE, $result, FILE_APPEND);
+

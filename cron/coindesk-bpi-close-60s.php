@@ -14,7 +14,7 @@ if (!file_exists(CSV_FILE) || filesize(CSV_FILE) === 0) {
     die('Target CSV not found.');
     
     // fresh start
-    file_put_contents(CSV_FILE, gzencode('Time,Open,High,Low,Close', 9) . PHP_EOL);
+    file_put_contents(CSV_FILE, gzencode('Time,Close', 9) . PHP_EOL);
     $lastDataset = new DateTime('2010-07-18');
     
 } else {
