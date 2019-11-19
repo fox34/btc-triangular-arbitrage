@@ -1,0 +1,89 @@
+#!/usr/bin/env php73
+<?php
+
+register_shutdown_function(function() { echo PHP_EOL; });
+
+// Zugriff per Konsole vorgesehen
+if (isset($_SERVER['HTTP_HOST'])) die('This is a console application.');
+if ($_SERVER['argc'] < 2) die('Invalid number of arguments. Please provide input file.');
+
+// Read last chunk of concatenated gzip file: Search for magic number 1f 8b
+// Poor performance. Use only for smaller chunks of data.
+// Limited to maximum 1MB of compressed data (uncompressed data may be larger)
+function gzfile_get_last_chunk_of_concatenated_file(string $file, int $readLimit = 1000000) : string
+{
+    // Limit to 1MB
+    $readLimit = min($readLimit, 1e6);
+    
+    $fp = fopen($file, 'rb');
+    if ($fp === false) {
+        throw new \Exception('Could not read file.');
+    }
+    
+    fseek($fp, -2, SEEK_END);
+    $gzdata = '';
+    $data = '';
+    $counter = 0;
+    
+    // Read chunks of 2 bytes and compare with magic number
+    while (($seq = fread($fp, 2)) && $counter++ < $readLimit) {
+        
+        // magic number not matched
+        if (bin2hex($seq) !== '1f8b') {
+            fseek($fp, -3, SEEK_CUR);
+            continue;
+        }
+        
+        $pos = ftell($fp);
+        $gzdata = $seq;
+        
+        // Read all remaining data
+        while ($chunk = fread($fp, 1024)) {
+            $gzdata .= $chunk;
+        }
+        
+        // Try decoding data
+        $data = @gzdecode($gzdata);
+        
+        // Could not decode data. Maybe magic number appeared inside compressed content?
+        if ($data === false) {
+            $data = '';
+            fseek($fp, $pos - 3);
+        } else {        
+            break;
+        }
+    }
+    fclose($fp);
+    
+    return $data;
+}
+
+$inputFile = $_SERVER['argv'][1];
+$numLines = $_SERVER['argv'][2] ?? null;
+
+if (!is_readable($inputFile)) die('Provided input file is not readable.');
+
+try {
+    $lastChunk = gzfile_get_last_chunk_of_concatenated_file($inputFile);
+} catch (\Exception $e) {
+    die('Could not read chunked gzip file: ' . $e->getMessage());
+}
+if ($lastChunk === '') {
+    die('Last chunk not found or empty.');
+}
+
+// Limit to last n lines
+if ($numLines !== null) {
+    $lines = explode(PHP_EOL, $lastChunk);
+    if (end($lines) === '') {
+        array_pop($lines);
+    }
+    
+    if (count($lines) > $numLines) {
+        $lines = array_slice($lines, -$numLines);
+    }
+    
+    $lastChunk = implode(PHP_EOL, $lines);
+}
+
+echo $lastChunk;
