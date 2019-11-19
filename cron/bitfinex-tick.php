@@ -3,7 +3,7 @@
 require_once '_include.php';
 
 define('API_URL', 'https://api-pub.bitfinex.com/v2/trades/tBTCUSD/hist');
-define('CSV_FILE', DATA_DIR . 'bitfinex-tick.csv');
+define('CSV_FILE', DATA_DIR . 'bitfinex-tick.csv.gz');
 
 if (!file_exists(CSV_FILE) || filesize(CSV_FILE) === 0) {
     
@@ -11,19 +11,38 @@ if (!file_exists(CSV_FILE) || filesize(CSV_FILE) === 0) {
     die('Target CSV not found.');
     
     echo 'Starting new.' . PHP_EOL;
-    file_put_contents(CSV_FILE, 'ID,Time,Amount,Price' . PHP_EOL);
+    file_put_contents(CSV_FILE, gzencode('ID,Time,Amount,Price' . PHP_EOL));
     $startQuery = new DateTime('2017-01-01');
     $lastDatasets = [];
     
 } else {
     
     echo 'Reading last dataset from CSV: ' . CSV_FILE . PHP_EOL;
-    echo 'Last modified:      ' . strftime('%Y-%m-%d %H:%M:%S', filemtime(CSV_FILE)) . PHP_EOL;
+    echo 'Last modified: ' . strftime('%Y-%m-%d %H:%M:%S', filemtime(CSV_FILE)) . PHP_EOL;
+    
+    // Lese letzten Datensatz
+    // Typischerweise nicht mehr als 10 kb an komprimierten Daten, bis zu 1MB zur Sicherheit lesen
+    $lastChunk = gzfile_get_last_chunk_of_concatenated_file(CSV_FILE);
+    if (empty($lastChunk)) {
+        die('Could not read last chunk from CSV.');
+    }
+
+    $lastDatasetsRaw = explode(PHP_EOL, $lastChunk);
+    
+    // Leeres Ende entfernen
+    if (end($lastDatasetsRaw) === '') {
+        array_pop($lastDatasetsRaw);
+    }
+    
+    $lastDatasetsRaw = array_slice($lastDatasetsRaw, -200);
+    $lastDatasets = [];
+    
+    // Speicher wieder freigeben
+    unset($lastChunk);
+    
     
     // read last datasets to prevent duplicates with same timestamp/id
     // assume there will be not more than 200 ticks at the exact same timestamp
-    $lastDatasetsRaw = explode(PHP_EOL, tailCustom(CSV_FILE, 200));
-    $lastDatasets = [];
     foreach ($lastDatasetsRaw as $i => $lastDataset) {
         $lastDataset = explode(',', $lastDataset);
         $lastDatasets[$lastDataset[0]] = $lastDataset;
@@ -31,7 +50,7 @@ if (!file_exists(CSV_FILE) || filesize(CSV_FILE) === 0) {
     
     $lastDatasetTime = readISODate(end($lastDatasets)[1]);
     
-    echo PHP_EOL . 'Last dataset:  ' . $lastDatasetTime->format('Y-m-d H:i:s.u') . PHP_EOL;
+    echo PHP_EOL . 'Last dataset: ' . $lastDatasetTime->format('Y-m-d H:i:s.u') . PHP_EOL;
 
     // last received dataset was less than a minute ago
     if ($lastDatasetTime > ( (new DateTime())->sub(new DateInterval('PT1M')))) {
@@ -41,6 +60,11 @@ if (!file_exists(CSV_FILE) || filesize(CSV_FILE) === 0) {
     // query 1s in the past to avoid truncated data with same timestamp
     $startQuery = clone $lastDatasetTime;
     $startQuery->sub(new DateInterval('PT1S'));
+}
+
+// CSV nicht beschreibbar
+if (!is_writeable(CSV_FILE)) {
+    die('Could not open target CSV file for writing.');
 }
 
 echo PHP_EOL . 'Querying from: ' . $startQuery->format('Y-m-d H:i:s.u') . PHP_EOL;
@@ -78,13 +102,9 @@ usort($data, function($a, $b) {
     return $a[0] - $b[0];
 });
 
-// open target file
-$csv = fopen(CSV_FILE, 'a');
-if ($csv === false) {
-    die('Could not open target CSV file for writing.');
-}
 
-// build result
+// Ergebnis zusammenstellen
+$result = '';
 foreach ($data as $tick) {
     
     // DO NOT PERFORM ANY CALCULATIONS! Number too large for PHP float
@@ -99,7 +119,12 @@ foreach ($data as $tick) {
     }
     
     echo 'Tick: ' . $tickLine . PHP_EOL;
-    fputcsv($csv, array_values($tick));
+    $result .= implode(',', array_values($tick)) . PHP_EOL;
 }
 
-fclose($csv);
+$result = gzencode($result);
+echo 'Collected ' . number_format(count($data), 0, ',', '.') . ' datasets. Writing ' . round(strlen($result)/1024) . ' kB gzip to target file.' . PHP_EOL;
+
+file_put_contents(CSV_FILE, $result, FILE_APPEND);
+
+
