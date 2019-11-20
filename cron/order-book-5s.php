@@ -19,16 +19,19 @@ require_once '_include.php';
 $sourceHost = strtolower(basename($_POST['source_host']));
 $exchange = strtolower(basename($_POST['exchange']));
 
-echo 'Received data for ' . $exchange .
-     ' from host ' . $sourceHost . ' (' . $_SERVER['REMOTE_ADDR'] . ')' . PHP_EOL;
-
 // JSON parsen
 try {
     $dataset = json_decode($_POST['raw_data'], false, 512, JSON_THROW_ON_ERROR);
 } catch (\JsonException $e) {
     http_response_code(400);
-    die('Could not parse provided data as JSON.');
+    infoLog('Could not parse provided data as JSON.');
+    exit;
 }
+
+infoLog(
+    'Received ' . count($dataset) . ' datasets for ' . $exchange . ' ' .
+    'from host ' . $sourceHost . ' (' . $_SERVER['REMOTE_ADDR'] . ')'
+);
 
 // Umweg über Datenbank: Bessere Suche und Aggregation, außerdem zeitlich korrekte Reihenfolge
 // der Daten auch bei verschiedenen Datenquellen (Backup-Crawler)
@@ -99,5 +102,5 @@ try {
     $stmt->execute($pdo_data);
 } catch (\PDOException $e) {
     http_response_code(500);
-    echo $e->getMessage();
+    infoLog($e->getMessage());
 }

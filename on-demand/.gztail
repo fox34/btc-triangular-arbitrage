@@ -1,0 +1,154 @@
+#!/usr/bin/env php73
+<?php
+
+// Assuming gz content is plain text file and gzip file is concatenated
+
+register_shutdown_function(function() { echo PHP_EOL; });
+
+// Zugriff per Konsole vorgesehen
+if (PHP_SAPI !== 'cli') die('This is a console application.');
+if ($_SERVER['argc'] < 2) die('Invalid number of arguments. Please provide input file.');
+
+// https://stackoverflow.com/a/34279537
+/**
+* Dumps a string into a traditional hex dump for programmers,
+* in a format similar to the output of the BSD command hexdump -C file.
+* The default result is a string.
+* Supported options:
+* <pre>
+*   line_sep        - line seperator char, default = "\n"
+*   bytes_per_line  - default = 16
+*   pad_char        - character to replace non-readble characters with, default = '.'
+* </pre>
+*
+* @param string $string
+* @param array $options
+* @param string|array
+*/
+function hex_dump($string, array $options = null) {
+    if (!is_scalar($string)) {
+        throw new InvalidArgumentException('$string argument must be a string');
+    }
+    if (!is_array($options)) {
+        $options = array();
+    }
+    $line_sep       = isset($options['line_sep'])   ? $options['line_sep']          : "\n";
+    $bytes_per_line = @$options['bytes_per_line']   ? $options['bytes_per_line']    : 16;
+    $pad_char       = isset($options['pad_char'])   ? $options['pad_char']          : '.'; # padding for non-readable characters
+
+    $text_lines = str_split($string, $bytes_per_line);
+    $hex_lines  = str_split(bin2hex($string), $bytes_per_line * 2);
+
+    $offset = 0;
+    $output = array();
+    $bytes_per_line_div_2 = (int)($bytes_per_line / 2);
+    foreach ($hex_lines as $i => $hex_line) {
+        $text_line = $text_lines[$i];
+        $output []=
+            sprintf('%08X',$offset) . '  ' .
+            str_pad(
+                strlen($text_line) > $bytes_per_line_div_2
+                ?
+                    implode(' ', str_split(substr($hex_line,0,$bytes_per_line),2)) . '  ' .
+                    implode(' ', str_split(substr($hex_line,$bytes_per_line),2))
+                :
+                implode(' ', str_split($hex_line,2))
+            , $bytes_per_line * 3) .
+            '  |' . preg_replace('/[^\x20-\x7E]/', $pad_char, $text_line) . '|';
+        $offset += $bytes_per_line;
+    }
+    $output []= sprintf('%08X', strlen($string));
+    return @$options['want_array'] ? $output : join($line_sep, $output) . $line_sep;
+}
+
+// Read last chunk of concatenated gzip file: Search for magic number 1f 8b
+// Poor performance. Use only for smaller chunks of data.
+// Limited to maximum 1MB of compressed data (uncompressed data may be larger)
+function gzfile_get_last_chunk_of_concatenated_file(string $file, int $readLimit = 1000000) : string
+{
+    // Limit to 1MB
+    $readLimit = min($readLimit, 1e6);
+    
+    $fp = fopen($file, 'rb');
+    if ($fp === false) {
+        throw new \Exception('Could not read file.');
+    }
+    
+    fseek($fp, -2, SEEK_END);
+    $gzdata = '';
+    $data = '';
+    $counter = 0;
+    
+    // Read chunks of 2 bytes and compare with magic number
+    while (($seq = fread($fp, 2)) && $counter++ < $readLimit) {
+        
+        // magic number not matched
+        if (bin2hex($seq) !== '1f8b') {
+            fseek($fp, -3, SEEK_CUR);
+            continue;
+        }
+        
+        $pos = ftell($fp);
+        $gzdata = $seq;
+        
+        // Read all remaining data
+        while ($chunk = fread($fp, 1024)) {
+            $gzdata .= $chunk;
+        }
+        
+        // Try decoding data
+        $data = @gzdecode($gzdata);
+        
+        // Could not decode data. Maybe magic number appeared inside compressed content?
+        if ($data === false) {
+            $data = '';
+            fseek($fp, $pos - 3);
+        } else {
+            fclose($fp);
+            return $data;
+        }
+    }
+    fclose($fp);
+    
+    throw new \Exception('Valid chunk not found within provided size limit.');
+}
+
+$inputFile = $_SERVER['argv'][1];
+$numLines = max((int)($_SERVER['argv'][2] ?? 10), 0);
+
+if (!is_readable($inputFile)) die('Provided input file is not readable.');
+
+try {
+    $lastChunk = gzfile_get_last_chunk_of_concatenated_file($inputFile);
+} catch (\Exception $e) {
+    echo 'Could not read chunked gzip file: ' . $e->getMessage() . PHP_EOL;
+    echo 'Hexdump of last 1MB:' . PHP_EOL;
+    $fp = fopen($inputFile, 'rb');
+    fseek($fp, -1e6, SEEK_END);
+    $content = '';
+    while ($chunk = fread($fp, 4096)) {
+        $content .= $chunk;
+    }
+    fclose($fp);
+    echo hex_dump($content);
+    exit;
+}
+if ($lastChunk === '') {
+    die('Last chunk is empty.');
+}
+
+// Limit to last n lines
+if ($numLines !== 0) {
+    $lines = explode(PHP_EOL, $lastChunk);
+    if (end($lines) === '') {
+        array_pop($lines);
+    }
+    
+    if (count($lines) > $numLines) {
+        $lines = array_slice($lines, -$numLines);
+    }
+    
+    $lastChunk = implode(PHP_EOL, $lines);
+}
+
+echo $lastChunk;

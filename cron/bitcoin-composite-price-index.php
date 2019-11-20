@@ -99,3 +99,10 @@ foreach ($data as $tick) {
 }
 
 fclose($csv);
+
+// Fallback for logging
+if (!($time instanceof \DateTime)) {
+    $time = new \DateTime();
+    $time->setTimestamp(0);
+}
+infoLog('Received ' . count($data) . ' datasets, last tick: ' . $time->format('Y-m-d H:i:s') . '.');

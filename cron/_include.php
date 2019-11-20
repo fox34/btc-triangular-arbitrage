@@ -3,6 +3,7 @@
 if (__FILE__ === $_SERVER['SCRIPT_FILENAME']) die('Diese Datei stellt gemeinsam genutzte Methoden fuer Cronskripte bereit und ist nicht fuer den oeffentlichen Zugriff eingerichtet.');
 
 define('DATA_DIR', dirname(__DIR__) . '/data/');
+define('CRON_NAME', basename($_SERVER['SCRIPT_NAME'], '.php'));
 
 // CSV-Format immer eines von:
 // Time,Close
@@ -59,6 +60,13 @@ function head(string $str, int $lines = 1, string $newLine = "\n")
 }
 
 
+function infoLog(string $msg) : void
+{
+    echo $msg . PHP_EOL;
+    file_put_contents(__DIR__ . '/logs/' . CRON_NAME . '-' . date('Ym') . '.log', ((new \DateTime())->format('[Y-m-d H:i:s.u] ')) . $msg . PHP_EOL, FILE_APPEND);
+}
+
+
 // Read last chunk of concatenated gzip file: Search for magic number 1f 8b
 // Poor performance. Use only for smaller chunks of data.
 // Limited to maximum 1MB of compressed data (uncompressed data may be larger)
@@ -69,7 +77,7 @@ function gzfile_get_last_chunk_of_concatenated_file(string $file, int $readLimit
     
     $fp = fopen($file, 'rb');
     if ($fp === false) {
-        throw new Exception('Could not read file.');
+        throw new \Exception('Could not read file.');
     }
     
     fseek($fp, -2, SEEK_END);
@@ -101,13 +109,14 @@ function gzfile_get_last_chunk_of_concatenated_file(string $file, int $readLimit
         if ($data === false) {
             $data = '';
             fseek($fp, $pos - 3);
-        } else {        
-            break;
+        } else {
+            fclose($fp);
+            return $data;
         }
     }
     fclose($fp);
     
-    return $data;
+    throw new \Exception('Valid chunk not found within provided size limit.');
 }
 
 // Source: https://gist.github.com/lorenzos/1711e81a9162320fde20

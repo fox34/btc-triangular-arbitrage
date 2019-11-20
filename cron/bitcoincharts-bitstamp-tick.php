@@ -17,7 +17,7 @@ echo 'Processing bitstamp' . $src . ' Ticks...' . PHP_EOL;
 if (!file_exists(CSV_FILE) || filesize(CSV_FILE) === 0) {
     
     die('Target CSV not found.');
-    file_put_contents(CSV_FILE, gzencode('Time,Price,Amount', 9) . PHP_EOL);
+    file_put_contents(CSV_FILE, gzencode('Time,Price,Amount') . PHP_EOL);
     
 } else {
     
@@ -119,8 +119,15 @@ foreach ($data as $line) {
     $result .= implode(',', [getISODate($time), $tick['Price'], $tick['Amount']]) . PHP_EOL;
 }
 
-$result = gzencode($result, 9);
-echo 'Collected ' . number_format($newDatasets, 0, ',', '.') . ' datasets. Writing ' . round(strlen($result)/1024) . ' kB gzip to target file.' . PHP_EOL;
+if (empty($result)) {
+    die('No new datasets.');
+}
+
+$result = gzencode($result);
+infoLog(
+    'Collected ' . number_format($newDatasets, 0, ',', '.') . ' datasets. ' . 
+    'Writing ' . round(strlen($result)/1024) . ' kB gzip to target file.'
+);
 
 file_put_contents(CSV_FILE, $result, FILE_APPEND);
 

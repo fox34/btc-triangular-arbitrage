@@ -24,7 +24,8 @@ if (!file_exists(CSV_FILE) || filesize(CSV_FILE) === 0) {
     // Typischerweise nicht mehr als 10 kb an komprimierten Daten, bis zu 1MB zur Sicherheit lesen
     $lastChunk = gzfile_get_last_chunk_of_concatenated_file(CSV_FILE);
     if (empty($lastChunk)) {
-        die('Could not read last chunk from CSV.');
+        infoLog('Last chunk is empty.');
+        exit;
     }
 
     $lastDatasetsRaw = explode(PHP_EOL, $lastChunk);
@@ -122,8 +123,15 @@ foreach ($data as $tick) {
     $result .= implode(',', array_values($tick)) . PHP_EOL;
 }
 
+if (empty($result)) {
+    die('No new datasets.');
+}
+
 $result = gzencode($result);
-echo 'Collected ' . number_format(count($data), 0, ',', '.') . ' datasets. Writing ' . round(strlen($result)/1024) . ' kB gzip to target file.' . PHP_EOL;
+infoLog(
+    'Collected ' . number_format(count($data), 0, ',', '.') . ' datasets. ' . 
+    'Writing ' . round(strlen($result)/1024) . ' kB gzip to target file.'
+);
 
 file_put_contents(CSV_FILE, $result, FILE_APPEND);
 

@@ -9,7 +9,7 @@ require_once '_include.php';
 function errorLog(string $msg) : void
 {
     echo $msg . PHP_EOL;
-    file_put_contents(__DIR__ . '/logs/order-book-aggregate.log', date('r ') . $msg . PHP_EOL, FILE_APPEND);
+    file_put_contents(__DIR__ . '/logs/order-book-aggregate-errors.log', date('r ') . $msg . PHP_EOL, FILE_APPEND);
 }
 
 // getPDO() defined in config.php
@@ -84,6 +84,7 @@ $stmt = $pdo->prepare('
 //print_r($result);
 
 $data = [];
+$resultCount = 0;
 foreach ($result as $order) {
     if (empty($data)) {
         $data = ['book_time' => $order->book_time_s, 'exchange_name' => $order->exchange_name];
@@ -129,6 +130,7 @@ foreach ($result as $order) {
                 $data['ask'],
                 $data['ask_amount']
             ]);
+            $resultCount++;
         } catch (\PDOException $e) {
             http_response_code(500);
             errorLog('Error inserting: ' . $e->getMessage());
@@ -139,6 +141,7 @@ foreach ($result as $order) {
     }
 }
 
+infoLog('Aggregated ' . count($result) . ' source datasets into ' . $resultCount . ' rows.');
 
 
 // Überprüfe neu eingesetzte Daten auf Lücken > 5 Sekunden
@@ -186,3 +189,4 @@ foreach ($result as $order) {
     
     $lastDatasetTime = $orderTime;
 }
+

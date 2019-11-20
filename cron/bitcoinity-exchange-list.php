@@ -70,3 +70,5 @@ foreach ($totalExchanges as $name => $niceName) {
     fputcsv($csv, [$name, $niceName]);
 }
 fclose($csv);
+
+infoLog('Collected ' . count($totalExchanges) . ' exchanges.');

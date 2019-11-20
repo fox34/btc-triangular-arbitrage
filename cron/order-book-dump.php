@@ -12,7 +12,7 @@ define('CSV_FILE', DATA_DIR . 'orderbook-all-raw.csv.gz');
 if (!file_exists(CSV_FILE) || filesize(CSV_FILE) === 0) {
     
     echo 'Starting new CSV.' . PHP_EOL;
-    file_put_contents(CSV_FILE, gzencode('TimeUTC,Exchange,Source,Type,Price,Amount' . PHP_EOL, 9));
+    file_put_contents(CSV_FILE, gzencode('TimeUTC,Exchange,Source,Type,Price,Amount' . PHP_EOL));
     
 } else {
     
@@ -63,7 +63,8 @@ $cleanupStmt = $pdo->prepare('
 ');
 
 if ($stmt->execute([$queryUntil->format('Y-m-d H:i:s.u')]) === false) {
-    die('Error querying database: ' . $stmt->errorInfo()[2]);
+    infoLog('Error querying database: ' . $stmt->errorInfo()[2]);
+    exit;
 }
 
 if ($stmt->rowCount() === 0) {
@@ -82,16 +83,23 @@ while ($order = $stmt->fetch(\PDO::FETCH_NUM)) {
 
 $stmt->closeCursor();
 
-$result = gzencode($result, 9);
-echo 'Collected ' . number_format($stmt->rowCount(), 0, ',', '.') . ' datasets up to ' . $queryUntil->format('Y-m-d H:i:s.u') . '. Writing ' . round(strlen($result)/1024) . ' kB gzip to target file.' . PHP_EOL;
-file_put_contents(CSV_FILE, $result, FILE_APPEND);
+if (!empty($result)) {
+    $result = gzencode($result);
+    infoLog(
+        'Collected ' . number_format($stmt->rowCount(), 0, ',', '.') . ' datasets ' .
+        'up to ' . $queryUntil->format('Y-m-d H:i:s.u') . '. ' . 
+        'Writing ' . round(strlen($result)/1024) . ' kB gzip to target file.'
+    );
+    file_put_contents(CSV_FILE, $result, FILE_APPEND);
+}
 
 // Aufräumen
 if ($cleanupStmt->execute([$queryUntil->format('Y-m-d H:i:s.u')]) === false) {
-    die('Error cleaning up database: ' . $cleanupStmt->errorInfo()[2]);
+    infoLog('Error cleaning up database: ' . $cleanupStmt->errorInfo()[2]);
+    exit;
 }
 
 $cleanupStmt->closeCursor();
 unset($pdo);
 
-echo 'Cleaned up ' . number_format($cleanupStmt->rowCount(), 0, ',', '.') . ' datasets.' . PHP_EOL;
+infoLog('Cleaned up ' . number_format($cleanupStmt->rowCount(), 0, ',', '.') . ' datasets.');
