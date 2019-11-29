@@ -5,13 +5,15 @@ if (__FILE__ === $_SERVER['SCRIPT_FILENAME']) die('Diese Datei stellt gemeinsam 
 define('DATA_DIR', dirname(__DIR__) . '/data/');
 define('CRON_NAME', basename($_SERVER['SCRIPT_NAME'], '.php'));
 
-// CSV-Format immer eines von:
-// Time,Close
-// Time,Average
-// Time,Open,High,Low,Close
 // Zeit = YYYY-MM-DDTHH:MM:SS.mmmmmmPPPPPP
 // Zeit = 2018-01-13T13:30:21.029304+01:00
 define('TIMEFORMAT', 'Y-m-d\TH:i:s.uP');
+
+// Zeit = YYYY-MM-DDTHH:MM:SSPPPPPP
+// Zeit = 2018-01-13T13:30:21+01:00
+define('TIMEFORMAT_SECONDS', 'Y-m-d\TH:i:sP');
+
+// Zeitzone immer UTC
 date_default_timezone_set('UTC');
 
 header('Content-Type: text/plain; charset=UTF-8');
@@ -31,20 +33,20 @@ function asPrice($string) : string
     return number_format($string, 2, ',', '.');
 }
 
-function readISODate(string $isoDate): DateTime
+function readISODate(string $isoDate): \DateTime
 {
-    $dateTime = DateTime::createFromFormat(TIMEFORMAT, $isoDate);
+    $dateTime = \DateTime::createFromFormat(TIMEFORMAT, $isoDate);
     if ($dateTime === false) {
         throw new Exception('Could not parse time.');
     }
     return $dateTime;
 }
-function getISODate(DateTime $dateTime) : string
+function getISODate(\DateTime $dateTime) : string
 {
     return $dateTime->format(TIMEFORMAT);
 }
 
-function getUnixTimeWithMilliseconds(DateTime $time, int $decimals = 3) : string
+function getUnixTimeWithMilliseconds(\DateTime $time, int $decimals = 3) : string
 {
     $decimals = max(min($decimals, 6), 0);
     return $time->format('U') . substr($time->format('u'), 0, $decimals);
