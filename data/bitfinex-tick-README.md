@@ -7,14 +7,16 @@
 
 ## API
 
-- Abfrage folgender URL: https://api-pub.bitfinex.com/v2/trades/tBTCUSD/hist
-- Aktualisierung erfolgt alle 2 Minuten
+- Abfrage folgender URLs:
+    - https://api-pub.bitfinex.com/v2/trades/tBTCUSD/hist
+    - https://api-pub.bitfinex.com/v2/trades/tBTCEUR/hist
+- Aktualisierung erfolgt alle 11-12 Minuten
 
 ## Dateistruktur
 - Vorgangs-ID
 - Datum ([UTC](https://de.wikipedia.org/wiki/Koordinierte_Weltzeit))
 - Gehandelte Menge in BTC ("How much was bought (positive) or sold (negative).")
-- Preis in USD
+- Preis in USD/EUR
 
 ---
     ID,Time,Amount,Price

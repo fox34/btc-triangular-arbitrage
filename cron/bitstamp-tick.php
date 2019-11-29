@@ -115,6 +115,7 @@ if (empty($result)) {
 
 $result = gzencode($result);
 infoLog(
+    'BTC' . strtoupper($src) . ': ' .
     'Collected ' . number_format(count($data), 0, ',', '.') . ' datasets. ' . 
     'Writing ' . round(strlen($result)/1000) . ' kB gzip to target file.'
 );

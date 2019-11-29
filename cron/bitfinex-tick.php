@@ -2,17 +2,22 @@
 
 require_once '_include.php';
 
-define('API_URL', 'https://api-pub.bitfinex.com/v2/trades/tBTCUSD/hist');
-define('CSV_FILE', DATA_DIR . 'bitfinex-tick.csv.gz');
+$src = strtoupper($_GET['src'] ?? '');
+if ($src !== 'EUR' && $src !== 'USD') {
+    die('Invalid source.');
+}
+
+define('API_URL', 'https://api-pub.bitfinex.com/v2/trades/tBTC' . $src . '/hist');
+define('CSV_FILE', DATA_DIR . 'bitfinex-tick-' . strtolower($src) . '.csv.gz');
 
 if (!file_exists(CSV_FILE) || filesize(CSV_FILE) === 0) {
     
     // safety net
-    die('Target CSV not found.');
+    //die('Target CSV not found.');
     
     echo 'Starting new.' . PHP_EOL;
     file_put_contents(CSV_FILE, gzencode('ID,Time,Amount,Price' . PHP_EOL));
-    $startQuery = new DateTime('2017-01-01');
+    $startQuery = new DateTime('2018-01-01');
     $lastDatasets = [];
     
 } else {
@@ -68,9 +73,10 @@ if (!is_writeable(CSV_FILE)) {
     die('Could not open target CSV file for writing.');
 }
 
+echo 'Reading data for BTC/' . $src . PHP_EOL;
 echo PHP_EOL . 'Querying from: ' . $startQuery->format('Y-m-d H:i:s.u') . PHP_EOL;
 
-// Docs: https://docs.bitfinex.com/v2/reference#rest-public-candles
+// Docs: https://docs.bitfinex.com/reference#rest-public-trades
 $url = API_URL . '?' . http_build_query([
     'start' => getUnixTimeWithMilliseconds($startQuery),
     'limit' => 5000,
@@ -129,6 +135,7 @@ if (empty($result)) {
 
 $result = gzencode($result);
 infoLog(
+    'BTC' . $src . ': ' .
     'Collected ' . number_format(count($data), 0, ',', '.') . ' datasets. ' . 
     'Writing ' . round(strlen($result)/1024) . ' kB gzip to target file.'
 );
