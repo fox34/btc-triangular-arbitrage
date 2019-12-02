@@ -29,8 +29,8 @@ Datenbank-Tabellenstrukturen:
 -- ENUM für exchange_name und source_name spart erheblich Speicherplatz
 CREATE TABLE `order_books` (
   `book_time` datetime(2) NOT NULL COMMENT 'Zeitstempel der Abfrage, Zeitzone UTC (!)',
-  `exchange_name` enum('bitfinex_usd','bitfinex_eur','bitstamp_usd','bitstamp_eur','coinbase_usd','coinbase_eur') NOT NULL,
-  `source_host` enum('drive.noecho.de') NOT NULL,
+  `exchange_name` enum('bitfinex_usd','bitfinex_eur','bitstamp_usd','bitstamp_eur','coinbase_usd','coinbase_eur','kraken_usd','kraken_eur') NOT NULL,
+  `source_host` enum('HOST_1','HOST_2') NOT NULL,
   `type` enum('bid','ask') NOT NULL,
   `price` decimal(10,4) NOT NULL COMMENT 'Preis typischerweise in xxxx.yy, aber zur Sicherheit etwas Puffer: xxxxxx.yyyy',
   `amount` decimal(16,8) NOT NULL COMMENT 'Bitcoins bis zu 1 sat (1/8)',
@@ -42,7 +42,7 @@ CREATE TABLE `order_books` (
 -- Auf eine Sekunde aggregierte Bestwerte für Geld- und Briefkurse jeder Börse für EUR+USD
 CREATE TABLE `order_books_aggregate` (
   `book_time` datetime NOT NULL COMMENT 'Zeitstempel der Abfrage, Zeitzone UTC (!)',
-  `exchange_name` enum('bitfinex_usd','bitfinex_eur','bitstamp_usd','bitstamp_eur','coinbase_usd','coinbase_eur') NOT NULL,
+  `exchange_name` enum('bitfinex_usd','bitfinex_eur','bitstamp_usd','bitstamp_eur','coinbase_usd','coinbase_eur','kraken_usd','kraken_eur') NOT NULL,
   `bid` decimal(10,4) NOT NULL COMMENT 'Preis typischerweise in xxxx.yy, aber zur Sicherheit etwas Puffer: xxxxxx.yyyy',
   `bid_amount` decimal(16,8) NOT NULL COMMENT 'Bitcoins bis zu 1 sat (1/8)',
   `ask` decimal(10,4) NOT NULL COMMENT 'Preis typischerweise in xxxx.yy, aber zur Sicherheit etwas Puffer: xxxxxx.yyyy',

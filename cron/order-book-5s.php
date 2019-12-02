@@ -55,7 +55,7 @@ foreach ($dataset as $time_fragment) {
     $time = $timestamp->format('Y-m-d H:i:s.u');
     
     foreach ($time_fragment->bids as $bid) {
-        echo 'Bid @ ' . $bid[0] . PHP_EOL;
+        //echo 'Bid @ ' . $bid[0] . PHP_EOL;
         
         if (!$first) {
             $query .= ',';
@@ -74,7 +74,7 @@ foreach ($dataset as $time_fragment) {
         ]);
     }
     foreach ($time_fragment->asks as $ask) {
-        echo 'Ask @ ' . $ask[0] . PHP_EOL;
+        //echo 'Ask @ ' . $ask[0] . PHP_EOL;
         
         if (!$first) {
             $query .= ',';
@@ -93,14 +93,17 @@ foreach ($dataset as $time_fragment) {
         ]);
     }
     
-    echo 'Processed: ' . $time . PHP_EOL . PHP_EOL;
+    //echo 'Processed: ' . $time . PHP_EOL . PHP_EOL;
 }
 
 $stmt = $pdo->prepare($query);
 
 try {
-    $stmt->execute($pdo_data);
-} catch (\PDOException $e) {
+    $result = $stmt->execute($pdo_data);
+    if ($result === false) {
+        throw new \Exception($stmt->errorInfo()[2] ?? 'Unknown SQL error');
+    }
+} catch (\PDOException | \Exception $e) {
     http_response_code(500);
     infoLog($e->getMessage());
 }
