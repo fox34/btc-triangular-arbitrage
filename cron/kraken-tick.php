@@ -45,6 +45,7 @@ if (!is_writeable(CSV_FILE)) {
 echo 'Reading data for BTC/' . strtoupper($src) . PHP_EOL;
 
 // Docs: https://www.kraken.com/features/api#get-recent-trades
+// Abfrage liefert immer maximal 1.000 Datensätze zurück
 $url = API_URL . '&' . http_build_query([
     'since' => $since
 ]);
