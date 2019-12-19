@@ -12,9 +12,6 @@ define('CSV_FILE', DATA_DIR . 'bitstamp-tick-' . $src . '.csv.gz');
 
 if (!file_exists(CSV_FILE) || filesize(CSV_FILE) === 0) {
     
-    // safety net
-    //die('Target CSV not found.');
-    
     echo 'Starting new.' . PHP_EOL;
     file_put_contents(CSV_FILE, gzencode('ID,Time,Amount,Price,Type' . PHP_EOL));
     $lastDataset = [0, '2000-01-01T00:00:00+00:00'];

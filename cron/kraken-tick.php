@@ -14,9 +14,6 @@ define('STATE_FILE', DATA_DIR . '.kraken-state-' . $src); // Enthält "last"-ID 
 
 if (!file_exists(CSV_FILE) || filesize(CSV_FILE) === 0) {
     
-    // safety net
-    //die('Target CSV not found.');
-    
     echo 'Starting new.' . PHP_EOL;
     $since = 0;
     file_put_contents(CSV_FILE, gzencode('Time,Amount,Price,Type,Limit' . PHP_EOL));

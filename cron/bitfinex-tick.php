@@ -12,9 +12,6 @@ define('CSV_FILE', DATA_DIR . 'bitfinex-tick-' . strtolower($src) . '.csv.gz');
 
 if (!file_exists(CSV_FILE) || filesize(CSV_FILE) === 0) {
     
-    // safety net
-    //die('Target CSV not found.');
-    
     echo 'Starting new.' . PHP_EOL;
     file_put_contents(CSV_FILE, gzencode('ID,Time,Amount,Price' . PHP_EOL));
     $startQuery = new DateTime('2018-01-01');

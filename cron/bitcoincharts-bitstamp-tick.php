@@ -18,7 +18,6 @@ echo 'Processing bitstamp' . $src . ' Ticks...' . PHP_EOL;
 // Timestamp (ms); Amount, Price
 if (!file_exists(CSV_FILE) || filesize(CSV_FILE) === 0) {
     
-    die('Target CSV not found.');
     file_put_contents(CSV_FILE, gzencode('Time,Price,Amount') . PHP_EOL);
     
 } else {
@@ -54,6 +53,8 @@ if (!file_exists(CSV_FILE) || filesize(CSV_FILE) === 0) {
     } catch (Exception $e) {
         die('Could not parse last dataset: ' . $lastLine[0]);
     }
+    
+    echo 'Last dataset: ' . $lastDataset->format('Y-m-d H:i:s') . PHP_EOL;
 }
 
 // CSV nicht beschreibbar
@@ -61,7 +62,6 @@ if (!is_writeable(CSV_FILE)) {
     die('Could not open target CSV file for writing.');
 }
 
-echo 'Last dataset: ' . $lastDataset->format('Y-m-d H:i:s') . PHP_EOL;
 echo 'Querying ' . API_URL . PHP_EOL;
 
 $data = file(API_URL);
@@ -84,7 +84,7 @@ foreach ($data as $line) {
     $time = DateTime::createFromFormat('U', $tick['Time']);
     
     // skip datasets out of range
-    if ($time < $lastDataset) {
+    if (isset($lastDataset) && $time < $lastDataset) {
         /*
         echo '-- Skipping ' . $time->format('Y-m-d H:i:s') . ' = ' .
              asPrice($tick['Price']) . ' ' . $src . ', ' . $tick['Amount'] . ' BTC' . PHP_EOL;
@@ -93,7 +93,7 @@ foreach ($data as $line) {
     }
     
     // same second, check dataset
-    if ($time == $lastDataset) {
+    if (isset($lastDataset) && $time == $lastDataset) {
         
         // check last datasets
         foreach ($lastLines as $existingData) {

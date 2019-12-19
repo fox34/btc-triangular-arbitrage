@@ -11,8 +11,6 @@ echo 'Processing 60s close...' . PHP_EOL;
 // Timestamp (ms); Amount, Price
 if (!file_exists(CSV_FILE) || filesize(CSV_FILE) === 0) {
     
-    die('Target CSV not found.');
-    
     // fresh start
     file_put_contents(CSV_FILE, gzencode('Time,Close') . PHP_EOL);
     $lastDataset = new DateTime('2010-07-18');
