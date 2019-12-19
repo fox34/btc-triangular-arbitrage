@@ -11,7 +11,7 @@
 - Nutzung folgender Adressen:
     - http://api.bitcoincharts.com/v1/trades.csv?symbol=bitstampUSD
     - http://api.bitcoincharts.com/v1/trades.csv?symbol=bitstampEUR
-- Aktualisierung erfolgt alle 15-16min
+- Aktualisierung erfolgt einmal pro Stunde
 
 
 ## Dateistruktur

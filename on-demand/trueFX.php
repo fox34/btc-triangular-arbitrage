@@ -33,12 +33,8 @@ $yearTo = 2019;
 $monthsFrom = 8;
 $monthsTo = 12;
 
-// Macbook
+// localhost
 $outPath = 'TrueFX/';
-
-// Googledrive Backup / drive.noecho.de
-//$outPath = '/mnt/union/Backup/Dissertation/TrueFX/';
-
 
 //$forexFilter = 'AUDJPY|AUDUSD|EURGBP|EURJPY|EURUSD|GBPJPY|GBPUSD|USDJPY';
 $forexFilter = 'EURUSD';

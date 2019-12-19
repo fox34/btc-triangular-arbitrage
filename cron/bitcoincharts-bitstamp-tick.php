@@ -7,6 +7,8 @@ if ($src !== 'EUR' && $src !== 'USD') {
     die('Invalid source.');
 }
 
+// https://bitcoincharts.com/about/markets-api/
+// Trade data is available as CSV, delayed by approx. 15 minutes. It will return the 2000 most recent trades.
 define('API_URL', 'http://api.bitcoincharts.com/v1/trades.csv?symbol=bitstamp' . $src);
 define('CSV_FILE', DATA_DIR . 'bitcoincharts-bitstamp-' . strtolower($src) . '-tick.csv.gz');
 

@@ -10,7 +10,7 @@
 - Abfrage folgender URLs:
     - https://api-pub.bitfinex.com/v2/trades/tBTCUSD/hist
     - https://api-pub.bitfinex.com/v2/trades/tBTCEUR/hist
-- Aktualisierung erfolgt alle 11-12 Minuten
+- Aktualisierung erfolgt stündlich
 
 ## Dateistruktur
 - Vorgangs-ID

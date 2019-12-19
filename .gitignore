@@ -2,6 +2,6 @@
 /data/*.csv
 /data/*.gz
 /data/*.json
-/data/.*-state-*
+/data/.*
 /cron/_config.php
 *.log

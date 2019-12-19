@@ -8,7 +8,7 @@
 
 ## API
 - Abfrage folgender URL: https://api.coindesk.com/charts/data?data=close&exchanges=bpi&index=USD&dev=1
-- Aktualisierung erfolgt täglich um 08:07
+- Aktualisierung erfolgt täglich um 08:02
 - Aufgrund der Nutzung einer internen API können bei kurzfristigen Änderungen vorübergehend Lücken entstehen.
 
 
