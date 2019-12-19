@@ -1,8 +1,0 @@
-RewriteEngine On
-
-# .csv -> .php
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteRule (.+)\.csv $1.php [L]
-
-RewriteCond %{REQUEST_FILENAME} -f
-RewriteRule .+\.md /markdown-parser/parse-md.php?file=%{REQUEST_URI} [L,QSA]

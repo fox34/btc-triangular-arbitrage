@@ -1,7 +1,12 @@
+# Ignore data
+/data/.*
 /data/*.7z
 /data/*.csv
 /data/*.gz
 /data/*.json
-/data/.*
-/cron/_config.php
+/data/*.zip
+
+# Ignore internal files
+/on-demand/trueFX*
 *.log
+.htaccess

@@ -10,7 +10,7 @@
 - Abfrage folgender URLs:
     - https://api.kraken.com/0/public/Trades?pair=xbtusd
     - https://api.kraken.com/0/public/Trades?pair=xbteur
-- Aktualisierung erfolgt alle 20 Minuten (EUR) bzw. einmal stündlich (USD)
+- Aktualisierung erfolgt alle 20 (EUR) bzw. 30 Minuten (USD)
 
 ## Dateistruktur
 - Datum ([UTC](https://de.wikipedia.org/wiki/Koordinierte_Weltzeit))
