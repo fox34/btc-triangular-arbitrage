@@ -10,7 +10,7 @@ if ($src !== 'EUR' && $src !== 'USD') {
 // https://bitcoincharts.com/about/markets-api/
 // Trade data is available as CSV, delayed by approx. 15 minutes. It will return the 2000 most recent trades.
 define('API_URL', 'http://api.bitcoincharts.com/v1/trades.csv?symbol=bitstamp' . $src);
-define('CSV_FILE', DATA_DIR . 'bitcoincharts-bitstamp-' . strtolower($src) . '-tick.csv.gz');
+define('CSV_FILE', DATA_DIR . 'bitstamp/bitcoincharts-bitstamp-tick-btc' . strtolower($src) . '.csv.gz');
 
 echo 'Processing bitstamp' . $src . ' Ticks...' . PHP_EOL;
 

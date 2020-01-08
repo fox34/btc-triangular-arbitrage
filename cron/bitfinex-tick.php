@@ -8,7 +8,7 @@ if ($src !== 'EUR' && $src !== 'USD') {
 }
 
 define('API_URL', 'https://api-pub.bitfinex.com/v2/trades/tBTC' . $src . '/hist');
-define('CSV_FILE', DATA_DIR . 'bitfinex-tick-' . strtolower($src) . '.csv.gz');
+define('CSV_FILE', DATA_DIR . 'bitfinex/bitfinex-tick-btc' . strtolower($src) . '.csv.gz');
 
 if (!file_exists(CSV_FILE) || filesize(CSV_FILE) === 0) {
     

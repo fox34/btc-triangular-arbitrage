@@ -1,10 +1,10 @@
 # Ignore data
-/data/.*
-/data/*.7z
-/data/*.csv
-/data/*.gz
-/data/*.json
-/data/*.zip
+.*
+*.7z
+*.csv
+*.gz
+*.json
+*.zip
 
 # Ignore internal files
 /on-demand/trueFX*

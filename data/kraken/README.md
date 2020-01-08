@@ -1,5 +1,7 @@
 # Kraken Tickdaten
 
+## Datenbeschreibung
+
 > Get recent trades  
 > Result: array of pair name and recent trade data
 >@ https://www.kraken.com/features/api#get-recent-trades
@@ -11,6 +13,11 @@
     - https://api.kraken.com/0/public/Trades?pair=xbtusd
     - https://api.kraken.com/0/public/Trades?pair=xbteur
 - Aktualisierung erfolgt alle 20 (EUR) bzw. 30 Minuten (USD)
+
+## Enthaltener Zeitraum
+
+- BTCUSD enthält Daten von 06.10.2013, 21:34:15 (UTC) bis heute
+- BTCEUR enthält Daten von 10.09.2013, 23:47:11 (UTC) bis heute
 
 ## Dateistruktur
 - Datum ([UTC](https://de.wikipedia.org/wiki/Koordinierte_Weltzeit))

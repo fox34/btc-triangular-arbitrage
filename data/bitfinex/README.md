@@ -1,5 +1,7 @@
 # Bitfinex Tickdaten
 
+## Datenbeschreibung
+
 > The trades endpoint allows the retrieval of past public trades and includes
 > details such as price, size, and time.
 >@ https://docs.bitfinex.com/reference#rest-public-trades
@@ -11,6 +13,11 @@
     - https://api-pub.bitfinex.com/v2/trades/tBTCUSD/hist
     - https://api-pub.bitfinex.com/v2/trades/tBTCEUR/hist
 - Aktualisierung erfolgt stündlich
+
+## Enthaltener Zeitraum
+
+- BTCUSD enthält Daten von 01.01.2018, 00:00:00 (UTC) bis heute
+- BTCEUR enthält Daten von 01.01.2018, 00:00:00 (UTC) bis heute
 
 ## Dateistruktur
 - Vorgangs-ID

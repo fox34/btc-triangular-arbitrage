@@ -8,8 +8,8 @@ if ($src !== 'EUR' && $src !== 'USD') {
 }
 
 define('API_URL', 'https://api.pro.coinbase.com/products/BTC-' . $src . '/trades');
-define('CSV_FILE', DATA_DIR . 'coinbase-tick-' . $src . '.csv.gz');
-define('STATE_FILE', DATA_DIR . '.coinbase-state-' . strtolower($src)); // Enthält letzte Seite der Pagination
+define('CSV_FILE', DATA_DIR . 'coinbase/coinbase-tick-btc' . strtolower($src) . '.csv.gz');
+define('STATE_FILE', DATA_DIR . 'coinbase/.state-btc' . strtolower($src)); // Enthält letzte Seite der Pagination
 
 if (!file_exists(CSV_FILE) || filesize(CSV_FILE) === 0) {
     

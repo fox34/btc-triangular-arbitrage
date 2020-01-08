@@ -8,7 +8,7 @@ if ($src !== 'eur' && $src !== 'usd') {
 }
 
 define('API_URL', 'https://www.bitstamp.net/api/v2/transactions/btc' . $src . '/?time=day');
-define('CSV_FILE', DATA_DIR . 'bitstamp-tick-' . $src . '.csv.gz');
+define('CSV_FILE', DATA_DIR . 'bitstamp/bitstamp-tick-btc' . $src . '.csv.gz');
 
 if (!file_exists(CSV_FILE) || filesize(CSV_FILE) === 0) {
     

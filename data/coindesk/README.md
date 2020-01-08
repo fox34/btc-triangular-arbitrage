@@ -1,5 +1,7 @@
 # Coindesk Bitcoin Price Index
 
+## Datenbeschreibung
+
 > Launched in September 2013, the CoinDesk Bitcoin Price Index (XBP) represents an average
 > of bitcoin prices across leading global exchanges that meet criteria specified by the XBP.
 > It is intended to serve as a standard retail price reference for industry participants and
@@ -11,6 +13,9 @@
 - Aktualisierung erfolgt täglich um 08:02
 - Aufgrund der Nutzung einer internen API können bei kurzfristigen Änderungen vorübergehend Lücken entstehen.
 
+## Enthaltener Zeitraum
+
+- BTCUSD enthält Daten von 18.07.2010, 00:00:00 (UTC) bis heute
 
 ## Dateistruktur
 - Datum ([UTC](https://de.wikipedia.org/wiki/Koordinierte_Weltzeit))

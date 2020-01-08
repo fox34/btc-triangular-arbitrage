@@ -9,8 +9,8 @@ if ($src !== 'eur' && $src !== 'usd') {
 $datasetName = 'XXBTZ' . strtoupper($src);
 
 define('API_URL', 'https://api.kraken.com/0/public/Trades?pair=xbt' . $src);
-define('CSV_FILE', DATA_DIR . 'kraken-tick-' . $src . '.csv.gz');
-define('STATE_FILE', DATA_DIR . '.kraken-state-' . $src); // Enthält "last"-ID der letzten Abfrage
+define('CSV_FILE', DATA_DIR . 'kraken/kraken-tick-btc' . $src . '.csv.gz');
+define('STATE_FILE', DATA_DIR . 'kraken/.state-btc' . $src); // Enthält "last"-ID der letzten Abfrage
 
 if (!file_exists(CSV_FILE) || filesize(CSV_FILE) === 0) {
     

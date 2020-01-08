@@ -3,7 +3,7 @@
 require_once '_include.php';
 
 define('API_URL', 'https://api.coindesk.com/charts/data');
-define('CSV_FILE', DATA_DIR . 'coindesk-bpi-close-60s.csv.gz');
+define('CSV_FILE', DATA_DIR . 'coindesk/coindesk-bpi-close-60s.csv.gz');
 
 echo 'Processing 60s close...' . PHP_EOL;
 

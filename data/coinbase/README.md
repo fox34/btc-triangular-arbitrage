@@ -1,5 +1,7 @@
 # Coinbase Tickdaten
 
+## Datenbeschreibung
+
 > List the latest trades for a product.  
 > The trade side indicates the maker order side. The maker order is the order that was open on the order book.  
 > **buy** side (0) indicates a down-tick because the maker was a buy order and their order was removed.  
@@ -13,6 +15,11 @@
     - https://api.pro.coinbase.com/products/BTC-USD/trades
     - https://api.pro.coinbase.com/products/BTC-EUR/trades
 - Aktualisierung erfolgt alle zwei Minuten
+
+## Enthaltener Zeitraum
+
+- BTCUSD enthält Daten von 31.12.2016, 09:34:01 (UTC) bis heute
+- BTCEUR enthält Daten von 31.12.2016, 00:16:35 (UTC) bis heute
 
 ## Dateistruktur
 - Vorgangs-ID
