@@ -23,8 +23,6 @@ define('INITIAL_START_PAGE_USD', 31503503); // 31.12.2017 23:59:55.819 = Letzter
 define('INITIAL_START_PAGE_EUR', 8814390); // 31.12.2017 23:59:50.700 = Letzter Datensatz vor 2018
 
 
-
-
 if (!file_exists(CSV_FILE) || filesize(CSV_FILE) === 0) {
     
     // Noch keine Daten gesammelt. Datei erzeugen und von vorne beginnen.

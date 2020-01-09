@@ -9,4 +9,3 @@
 # Ignore internal files
 /on-demand/trueFX*
 *.log
-.htaccess
