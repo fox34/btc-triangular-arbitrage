@@ -18,8 +18,8 @@
 
 ## Enthaltener Zeitraum
 
-- BTCUSD enthält Daten von 31.12.2016, 09:34:01 (UTC) bis heute
-- BTCEUR enthält Daten von 31.12.2016, 00:16:35 (UTC) bis heute
+- BTCUSD enthält Daten von 31.12.2017, 23:59:55.819 (UTC) bis heute
+- BTCEUR enthält Daten von 31.12.2017, 23:59:50.700 (UTC) bis heute
 
 ## Dateistruktur
 - Vorgangs-ID

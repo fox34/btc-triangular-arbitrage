@@ -2,27 +2,36 @@
 
 require_once '_include.php';
 
+// Skript kann für BTCUSD und BTCEUR verwendet werden
 $src = strtolower($_GET['src'] ?? '');
 if ($src !== 'eur' && $src !== 'usd') {
     die('Invalid source.');
 }
 
+// API-Quelle
 define('API_URL', 'https://www.bitstamp.net/api/v2/transactions/btc' . $src . '/?time=day');
+
+// CSV-Ziel
 define('CSV_FILE', DATA_DIR . 'bitstamp/bitstamp-tick-btc' . $src . '.csv.gz');
+
 
 if (!file_exists(CSV_FILE) || filesize(CSV_FILE) === 0) {
     
+    // Noch keine Daten gesammelt. Datei erzeugen und neu beginnen.
+    // Bitstamp erlaubt keine Abfrage historischer Daten -> Beginn ab heute
     echo 'Starting new.' . PHP_EOL;
     file_put_contents(CSV_FILE, gzencode('ID,Time,Amount,Price,Type' . PHP_EOL));
-    $lastDataset = [0, '2000-01-01T00:00:00+00:00'];
+    
+    // Letzte ID = 0 = Anfang
+    $lastDataset = [0];
     
 } else {
     
+    // Datensatz existiert, fortsetzen
     echo 'Reading last dataset from CSV: ' . CSV_FILE . PHP_EOL;
     echo 'Last modified: ' . strftime('%Y-%m-%d %H:%M:%S', filemtime(CSV_FILE)) . PHP_EOL;
     
     // Lese letzten Datensatz
-    // Typischerweise nicht mehr als 10 kb an komprimierten Daten, bis zu 1MB zur Sicherheit lesen
     $lastChunk = gzfile_get_last_chunk_of_concatenated_file(CSV_FILE);
     if (empty($lastChunk)) {
         infoLog('Last chunk is empty.');
@@ -38,7 +47,7 @@ if (!file_exists(CSV_FILE) || filesize(CSV_FILE) === 0) {
     
     $lastDataset = explode(',', array_pop($lastChunk));
     
-    // Speicher wieder freigeben
+    // Speicher freigeben
     unset($lastChunk);
     
     echo PHP_EOL . 'Last dataset: ID ' . $lastDataset[0] . ' @ ' . $lastDataset[1] . PHP_EOL;
@@ -46,7 +55,7 @@ if (!file_exists(CSV_FILE) || filesize(CSV_FILE) === 0) {
     $lastDatasetTime = \DateTime::createFromFormat(TIMEFORMAT_SECONDS, $lastDataset[1]);
     
     // Letzter Datensatz zuletzt vor weniger als einer Stunde eingelesen
-    if ($lastDatasetTime > ( (new DateTime())->sub(new DateInterval('PT1H')))) {
+    if ($lastDatasetTime > ( (new \DateTime())->sub(new \DateInterval('PT1H')))) {
         die('Last dataset is too recent. Stop.');
     }
 }
@@ -56,6 +65,7 @@ if (!is_writeable(CSV_FILE)) {
     die('Could not open target CSV file for writing.');
 }
 
+// API abfragen
 echo 'Reading data for BTC/' . strtoupper($src) . PHP_EOL;
 echo 'Querying ' . API_URL . PHP_EOL;
 
@@ -75,18 +85,19 @@ if (empty($data)) {
     die('Received dataset is empty.');
 }
 
-// Neueste zuerst, daher muss Reihenfolge umgekehrt werden
+// Neueste zuerst, daher Reihenfolge umkehren
 $data = array_reverse($data);
-
 
 // Ergebnis zusammenstellen
 $result = '';
 foreach ($data as $tick) {
     
+    // Zeit einlesen: Unix-Timestamp
     $time = new \DateTime();
     $time->setTimestamp($tick->date);
-    $tick->date = $time->format(TIMEFORMAT_SECONDS);
+    $tick->date = getISODateSeconds($time);
     
+    // Datensatz aufbereiten: ID, Zeitstempel, Volumen, Preis, Art
     $tickLine = sprintf(
         '%s,%s,%s,%s,%s',
         $tick->tid,
@@ -96,20 +107,23 @@ foreach ($data as $tick) {
         $tick->type
     );
     
+    // Dieser Datensatz ist bereits erfasst worden
     if ($tick->tid <= $lastDataset[0]) {
         echo 'ID below last dataset, skipping: ' . $tickLine . PHP_EOL;
         continue;
     }
     
+    // Datensatz hinzufügen
     echo 'Tick: ' . $tickLine . PHP_EOL;
-    // ID,Time,Amount,Price,Type
     $result .= $tickLine . PHP_EOL;
 }
 
+// Keine neuen Datensätze: Ende
 if (empty($result)) {
     die('No new datasets.');
 }
 
+// Ergebnis in Datei speichern
 $result = gzencode($result);
 infoLog(
     'BTC' . strtoupper($src) . ': ' .

@@ -1,14 +1,20 @@
 <?php
 
+// Direkten Zugriff auf diese Datei unterbinden
 if (__FILE__ === $_SERVER['SCRIPT_FILENAME']) die('Diese Datei stellt gemeinsam genutzte Methoden fuer Cronskripte bereit und ist nicht fuer den oeffentlichen Zugriff eingerichtet.');
 
+// Speicherziel für gesammelte Daten
 define('DATA_DIR', dirname(__DIR__) . '/data/');
+
+// Aktuell aufgerufenes Skript für Logging
 define('CRON_NAME', basename($_SERVER['SCRIPT_NAME'], '.php'));
 
+// ISO 8601-Zeitformat mit Mikrosekunden
 // Zeit = YYYY-MM-DDTHH:MM:SS.mmmmmmPPPPPP
 // Zeit = 2018-01-13T13:30:21.029304+01:00
 define('TIMEFORMAT', 'Y-m-d\TH:i:s.uP');
 
+// ISO 8601-Zeitformat ohne Mikrosekunden
 // Zeit = YYYY-MM-DDTHH:MM:SSPPPPPP
 // Zeit = 2018-01-13T13:30:21+01:00
 define('TIMEFORMAT_SECONDS', 'Y-m-d\TH:i:sP');
@@ -16,9 +22,11 @@ define('TIMEFORMAT_SECONDS', 'Y-m-d\TH:i:sP');
 // Zeitzone immer UTC
 date_default_timezone_set('UTC');
 
+// Ausgabeoptionen
 header('Content-Type: text/plain; charset=UTF-8');
 ini_set('html_errors', 0);
 
+// Informationen ausgeben
 if (!defined('DIS_TOOLS_NO_OUTPUT')) {
     echo
         strftime('%d.%m.%Y, %H:%M:%S ') . 
@@ -28,11 +36,20 @@ if (!defined('DIS_TOOLS_NO_OUTPUT')) {
         PHP_EOL . PHP_EOL;
 }
 
+// Vorgang protokollieren
+function infoLog(string $msg) : void
+{
+    echo $msg . PHP_EOL;
+    file_put_contents(__DIR__ . '/logs/' . CRON_NAME . '-' . date('Ym') . '.log', ((new \DateTime())->format('[Y-m-d H:i:s.u] ')) . $msg . PHP_EOL, FILE_APPEND);
+}
+
+// Nummer nach deutschem Format ausgeben
 function asPrice($string) : string
 {
     return number_format($string, 2, ',', '.');
 }
 
+// ISO-Datum einlesen
 function readISODate(string $isoDate): \DateTime
 {
     $dateTime = \DateTime::createFromFormat(TIMEFORMAT, $isoDate);
@@ -41,17 +58,25 @@ function readISODate(string $isoDate): \DateTime
     }
     return $dateTime;
 }
+
+// ISO-Datum ausgeben, nutze Format "Z" für UTC-Zeitzone
 function getISODate(\DateTime $dateTime) : string
 {
-    return $dateTime->format(TIMEFORMAT);
+    return preg_replace('~\+00:00$~', 'Z', $dateTime->format(TIMEFORMAT));
+}
+function getISODateSeconds(\DateTime $dateTime) : string
+{
+    return preg_replace('~\+00:00$~', 'Z', $dateTime->format(TIMEFORMAT_SECONDS));
 }
 
+// Als Unix-Zeitstempel inklusive Millisekunden ausgeben
 function getUnixTimeWithMilliseconds(\DateTime $time, int $decimals = 3) : string
 {
     $decimals = max(min($decimals, 6), 0);
     return $time->format('U') . substr($time->format('u'), 0, $decimals);
 }
 
+// Erste $lines Zeilen einer Datei lesen
 function head(string $str, int $lines = 1, string $newLine = "\n")
 {
     $result = strtok($str, $newLine);
@@ -59,13 +84,6 @@ function head(string $str, int $lines = 1, string $newLine = "\n")
         $result .= $newLine . strtok($newLine);
     }
     return $result;
-}
-
-
-function infoLog(string $msg) : void
-{
-    echo $msg . PHP_EOL;
-    file_put_contents(__DIR__ . '/logs/' . CRON_NAME . '-' . date('Ym') . '.log', ((new \DateTime())->format('[Y-m-d H:i:s.u] ')) . $msg . PHP_EOL, FILE_APPEND);
 }
 
 
@@ -195,6 +213,7 @@ function tailCustom(string $filepath, int $lines = 1, bool $adaptive = true, str
     return trim($output);
 }
 
+// Dateigröße menschenlesbar ausgeben
 function formatFileSize(float $size) : string
 {
     $sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
