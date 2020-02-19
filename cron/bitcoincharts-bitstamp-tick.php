@@ -72,6 +72,7 @@ echo 'Querying ' . API_URL . PHP_EOL;
 
 $data = file(API_URL);
 if (empty($data)) {
+    infoLog('Decoding data failed.');
     die('Could not read response.');
 }
 echo 'Received '. count($data) . ' datasets.' . PHP_EOL . PHP_EOL;

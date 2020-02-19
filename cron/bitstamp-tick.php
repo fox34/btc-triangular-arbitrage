@@ -75,6 +75,7 @@ $data = json_decode($json);
 if (!is_array($data)) {
     echo 'Could not decode response: ' . json_last_error_msg() . PHP_EOL;
     echo 'Received data: ' . PHP_EOL;
+    infoLog('Decoding data failed.');
     var_dump($json);
     exit;
 }

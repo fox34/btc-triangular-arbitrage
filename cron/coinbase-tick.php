@@ -35,13 +35,11 @@ if (!file_exists(CSV_FILE) || filesize(CSV_FILE) === 0) {
 } else {
     
     // Datensatz existiert, fortsetzen
-    echo 'Reading last dataset from CSV: ' . CSV_FILE . PHP_EOL;
-    echo 'Last modified: ' . strftime('%Y-%m-%d %H:%M:%S', filemtime(CSV_FILE)) . PHP_EOL;
+    printLog('CSV last modified:', strftime('%Y-%m-%d %H:%M:%S', filemtime(CSV_FILE)));
     
     // Letzte Seite lesen
     $startPage = file_get_contents(STATE_FILE);
-    echo 'Reading page from state file: ' . STATE_FILE . ':' . PHP_EOL;
-    echo 'Current page: ' . $startPage . PHP_EOL . PHP_EOL;
+    printLog('Stored state:', $startPage);
     
     // Lese letzten Datensatz, um Duplikate zu vermeiden
     $lastChunk = gzfile_get_last_chunk_of_concatenated_file(CSV_FILE);
@@ -62,12 +60,12 @@ if (!file_exists(CSV_FILE) || filesize(CSV_FILE) === 0) {
     // Speicher freigeben
     unset($lastChunk);
     
-    echo PHP_EOL . 'Last dataset: ID ' . $lastDataset[0] . ' @ ' . $lastDataset[1] . PHP_EOL;
+    printLog('Last dataset in CSV:', $lastDataset[0], '@', $lastDataset[1], PHP_EOL);
     
     $lastDatasetTime = \DateTime::createFromFormat(TIMEFORMAT_SECONDS, $lastDataset[1]);
     
-    // Letzter Datensatz zuletzt vor weniger als einer Stunde eingelesen
-    if ($lastDatasetTime > ( (new DateTime())->sub(new DateInterval('PT1H')))) {
+    // Letzter Datensatz zuletzt vor weniger als einer Minute eingelesen
+    if ($lastDatasetTime > ( (new DateTime())->sub(new DateInterval('PT1M')))) {
         die('Last dataset is too recent. Stop.');
     }
 }
@@ -78,13 +76,13 @@ if (!is_writeable(CSV_FILE)) {
 }
 
 // API abfragen
-echo 'Reading data for BTC/' . $src . PHP_EOL;
+printLog('Reading data for BTC/' . $src);
 
 $url = API_URL . '?' . http_build_query([
     'after' => $startPage
 ]);
 
-echo 'Querying ' . $url . PHP_EOL;
+printLog('Querying ' . $url);
 
 // Coinbase braucht einen User Agent und die passenden Kopfzeilen. Simuliere macOS 10.15.2 mit Safari
 $json = file_get_contents($url, false, stream_context_create([
@@ -107,11 +105,12 @@ $data = json_decode($data);
 if (empty($json) || !is_array($data)) {
     echo 'Could not decode response: ' . json_last_error_msg() . PHP_EOL;
     echo 'Received data: ' . PHP_EOL;
+    infoLog('Decoding data failed.');
     var_dump($json);
     exit;
 }
 
-echo 'Received data: ' . round(strlen($json)/1000) . ' kB / '. count($data) . ' datasets' . PHP_EOL . PHP_EOL;
+printLog('Received', strlen($json), 'bytes containing', count($data), 'datasets', PHP_EOL);
 
 if (empty($data)) {
     die('Received dataset is empty.');
@@ -122,6 +121,7 @@ $data = array_reverse($data);
 
 // Ergebnis zusammenstellen
 $result = '';
+echo '           ID       Time                 Volume     Price         is_sell' . PHP_EOL;
 foreach ($data as $tick) {
     
     // Datum einlesen
@@ -145,12 +145,12 @@ foreach ($data as $tick) {
     
     // Dieser Datensatz ist bereits erfasst worden
     if ($tick->trade_id <= $lastDataset[0]) {
-        echo 'ID below last dataset, skipping: ' . $tickLine . PHP_EOL;
+        echo 'Duplicate: ' . $tickLine . PHP_EOL;
         continue;
     }
     
     // Datensatz hinzufügen
-    echo 'Tick: ' . $tickLine . PHP_EOL;
+    echo '     Tick: ' . $tickLine . PHP_EOL;
     $result .= $tickLine . PHP_EOL;
 }
 

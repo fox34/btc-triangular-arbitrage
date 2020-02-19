@@ -28,15 +28,29 @@ ini_set('html_errors', 0);
 
 // Informationen ausgeben
 if (!defined('DIS_TOOLS_NO_OUTPUT')) {
-    echo
-        strftime('%d.%m.%Y, %H:%M:%S ') . 
-        'Starting Dis-Tools. Timezone is: UTC. ' . 
-        'This file was last updated: ' .
-        strftime('%d.%m.%Y, %H:%M:%S', filemtime($_SERVER['SCRIPT_FILENAME'])) . ' UTC.' .
-        PHP_EOL . PHP_EOL;
+    echo getISODate(new \DateTime()) . ' Starting crawler.' . PHP_EOL . PHP_EOL;
 }
 
 // Vorgang protokollieren
+function getLogTime() : string
+{
+    return preg_replace('~\+00:00$~', 'Z', (new \DateTime())->format('H:i:s.u')) . ' ';
+}
+//  Nur anzeigen
+function printLog(...$args) : void
+{
+    if (empty($args)) {
+        return;
+    }
+    // Last argument determines new line after log message
+    if (end($args) === false) {
+        array_pop($args);
+    } else {
+        $args[] = PHP_EOL;
+    }
+    echo getLogTime() . implode(' ', $args);
+}
+// Anzeigen und speichern
 function infoLog(string $msg) : void
 {
     echo $msg . PHP_EOL;
