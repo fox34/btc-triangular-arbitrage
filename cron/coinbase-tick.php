@@ -4,7 +4,7 @@ require_once '_include.php';
 
 // Skript kann für BTCUSD und BTCEUR verwendet werden
 $src = strtoupper($_GET['src'] ?? '');
-if ($src !== 'EUR' && $src !== 'USD') {
+if ($src !== 'EUR' && $src !== 'USD' && $src !== 'GBP') {
     die('Invalid source.');
 }
 
@@ -21,6 +21,7 @@ define('STATE_FILE', DATA_DIR . 'coinbase/.state-btc' . strtolower($src));
 // Ab welcher Seite soll das Crawling beginnen, wenn noch keine Daten vorliegen?
 define('INITIAL_START_PAGE_USD', 31503503); // 31.12.2017 23:59:55.819 = Letzter Datensatz vor 2018
 define('INITIAL_START_PAGE_EUR', 8814390); // 31.12.2017 23:59:50.700 = Letzter Datensatz vor 2018
+define('INITIAL_START_PAGE_GBP', 2544002); // 31.12.2017 23:59:50.373 = Letzter Datensatz vor 2018
 
 
 if (!file_exists(CSV_FILE) || filesize(CSV_FILE) === 0) {
@@ -29,7 +30,15 @@ if (!file_exists(CSV_FILE) || filesize(CSV_FILE) === 0) {
     echo 'Starting new.' . PHP_EOL;
     file_put_contents(CSV_FILE, gzencode('ID,Time,Amount,Price,Type' . PHP_EOL));
     $lastDataset = [0, '2000-01-01T00:00:00+00:00'];
-    $startPage = $src === 'USD' ? INITIAL_START_PAGE_USD : INITIAL_START_PAGE_EUR;
+    if ($src === 'USD') {
+        $startPage = INITIAL_START_PAGE_USD;
+    } elseif ($src === 'EUR') {
+        $startPage = INITIAL_START_PAGE_EUR;
+    } elseif ($src === 'GBP') {
+        $startPage = INITIAL_START_PAGE_GBP;
+    } else {
+        die("Unknown start page.");
+    }
     file_put_contents(STATE_FILE, $startPage);
     
 } else {
@@ -121,7 +130,7 @@ $data = array_reverse($data);
 
 // Ergebnis zusammenstellen
 $result = '';
-echo '           ID       Time                 Volume     Price         is_sell' . PHP_EOL;
+echo '           ID       Time                        Volume     Price         is_sell' . PHP_EOL;
 foreach ($data as $tick) {
     
     // Datum einlesen
@@ -131,7 +140,7 @@ foreach ($data as $tick) {
     if ($time === false) {
         $time = \DateTime::createFromFormat('Y-m-d\TH:i:s\Z', $tick->time);
     }
-    $tick->time = getISODateSeconds($time);
+    $tick->time = getISODate($time);
     
     // Datensatz aufbereiten: ID, Zeitstempel, Volumen, Preis, Art
     $tickLine = sprintf(

@@ -12,17 +12,26 @@
 - Abfrage folgender URLs:
     - https://api.kraken.com/0/public/Trades?pair=xbtusd
     - https://api.kraken.com/0/public/Trades?pair=xbteur
-- Aktualisierung erfolgt alle 20 (EUR) bzw. 30 Minuten (USD)
+    - https://api.kraken.com/0/public/Trades?pair=xbtgbp
+    - https://api.kraken.com/0/public/Trades?pair=xbtjpy
+    - https://api.kraken.com/0/public/Trades?pair=xbtcad
+    - https://api.kraken.com/0/public/Trades?pair=xbtchf
+- EUR wird alle 20 Minuten aktualisiert
+- Alle anderen Handelspaare werden alle 30 Minuten aktualisiert
 
 ## Enthaltener Zeitraum
 
 - BTCUSD enthält Daten von 06.10.2013, 21:34:15 (UTC) bis heute
 - BTCEUR enthält Daten von 10.09.2013, 23:47:11 (UTC) bis heute
+- BTCGBP enthält Daten von 06.11.2014, 16:13:43 (UTC) bis heute
+- BTCJPY enthält Daten von 05.11.2014, 22:21:30 (UTC) bis heute
+- BTCCAD enthält Daten von 29.06.2015, 03:27:41 (UTC) bis heute
+- BTCCHF enthält Daten von 06.12.2019, 16:33:17 (UTC) bis heute
 
 ## Dateistruktur
 - Datum ([UTC](https://de.wikipedia.org/wiki/Koordinierte_Weltzeit))
 - Gehandelte Menge in BTC
-- Preis in USD/EUR
+- Preis in USD/EUR/GBP/JPY/CAD/CHF
 - Art (Kauf = b / Verkauf = s)
 - Limit (l = Limitiert, m = Market = Unlimitiert)
 

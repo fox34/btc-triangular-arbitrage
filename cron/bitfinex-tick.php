@@ -4,7 +4,7 @@ require_once '_include.php';
 
 // Skript kann für BTCUSD und BTCEUR verwendet werden
 $src = strtoupper($_GET['src'] ?? '');
-if ($src !== 'EUR' && $src !== 'USD') {
+if ($src !== 'EUR' && $src !== 'USD' && $src !== 'JPY' && $src !== 'GBP') {
     die('Invalid source.');
 }
 
@@ -99,7 +99,7 @@ echo 'Querying ' . $url . PHP_EOL;
 $json = file_get_contents($url);
 
 // floats als string beibehalten, da die Werte für PHP zu groß werden können...
-$json = preg_replace('/((?:-)?\d+\.\d+(?:e-?\d+))/', '"$1"', $json);
+$json = preg_replace('/((?:-)?\d+(?:\.\d+)?(?:e-\d+)?)/', '"$1"', $json);
 
 $data = json_decode($json);
 if (!is_array($data)) {

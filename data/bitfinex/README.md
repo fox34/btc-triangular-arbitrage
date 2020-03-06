@@ -12,24 +12,25 @@
 - Abfrage folgender URLs:
     - https://api-pub.bitfinex.com/v2/trades/tBTCUSD/hist
     - https://api-pub.bitfinex.com/v2/trades/tBTCEUR/hist
-- Aktualisierung erfolgt stündlich
+    - https://api-pub.bitfinex.com/v2/trades/tBTCGBP/hist
+    - https://api-pub.bitfinex.com/v2/trades/tBTCJPY/hist
+- Daten werden stündlich aktualisiert
 
 ## Enthaltener Zeitraum
 
-- BTCUSD enthält Daten von 01.01.2018, 00:00:00 (UTC) bis heute
-- BTCEUR enthält Daten von 01.01.2018, 00:00:00 (UTC) bis heute
+- BTCUSD, BTCEUR, BTCGBP und BTCJPY enthalten jeweils Daten von 01.01.2018, 00:00:00 (UTC) bis heute
 
 ## Dateistruktur
 - Vorgangs-ID
 - Datum ([UTC](https://de.wikipedia.org/wiki/Koordinierte_Weltzeit))
 - Gehandelte Menge in BTC ("How much was bought (positive) or sold (negative).")
-- Preis in USD/EUR
+- Preis in USD/EUR/GBP/JPY
 
 ---
     ID,Time,Amount,Price
-    25291508,2017-01-01T00:00:12.000000+00:00,-1.65,966.61
-    25291510,2017-01-01T00:01:04.000000+00:00,-0.0125,966.62
+    148668312,2018-01-01T00:00:00.000000+00:00,0.01475502,13769
+    148668314,2018-01-01T00:00:01.000000+00:00,-0.1,13763
     [...]
-    27202171,2017-03-16T07:45:37.000000+00:00,0.84679416,1230
-    27202176,2017-03-16T07:45:48.000000+00:00,-0.63372261,1229.9
+    421789299,2020-03-04T15:24:57.862000Z,0.003,8784.9908181
+    421789301,2020-03-04T15:24:58.761000Z,-0.05,8784.90450974
 ---

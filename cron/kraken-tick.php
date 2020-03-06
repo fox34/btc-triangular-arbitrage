@@ -4,7 +4,7 @@ require_once '_include.php';
 
 // Skript kann für BTCUSD und BTCEUR verwendet werden
 $src = strtolower($_GET['src'] ?? '');
-if ($src !== 'eur' && $src !== 'usd') {
+if ($src !== 'eur' && $src !== 'usd' && $src !== 'gbp' && $src !== 'jpy' && $src !== 'cad' && $src !== 'chf') {
     die('Invalid source.');
 }
 
@@ -12,6 +12,8 @@ if ($src !== 'eur' && $src !== 'usd') {
 // AAA = Quotierte Währung = XBT = BTC
 // BBB = Gegenwährung = USD oder EUR
 $datasetName = 'XXBTZ' . strtoupper($src);
+// Sonderfall XBTCHF
+$alternativeDatasetName = 'XBT' . strtoupper($src);
 
 // API-Quelle
 // Docs: https://www.kraken.com/features/api#get-recent-trades
@@ -25,14 +27,14 @@ define('STATE_FILE', DATA_DIR . 'kraken/.state-btc' . $src);
 
 // Ab welcher ID soll das Crawling beginnen, wenn noch keine Daten vorliegen?
 // 0 = Alle
-define('INITIAL_ID_USD', 0); // 06.10.2013, 21:34:15
-define('INITIAL_ID_EUR', 0); // 10.09.2013, 23:47:11
+//define('INITIAL_ID_USD', 0); // 06.10.2013, 21:34:15
+//define('INITIAL_ID_EUR', 0); // 10.09.2013, 23:47:11
 
 if (!file_exists(CSV_FILE) || filesize(CSV_FILE) === 0) {
     
     // Noch keine Daten gesammelt. Datei erzeugen und von vorne beginnen.
     echo 'Starting new.' . PHP_EOL;
-    $since = $src === 'USD' ? INITIAL_ID_USD : INITIAL_ID_EUR;
+    $since = 0; // $src === 'USD' ? INITIAL_ID_USD : INITIAL_ID_EUR;
     file_put_contents(CSV_FILE, gzencode('Time,Amount,Price,Type,Limit' . PHP_EOL));
     file_put_contents(STATE_FILE, $since);
     
@@ -77,6 +79,17 @@ if (!is_object($data)) {
     echo 'Could not decode response: ' . json_last_error_msg() . PHP_EOL;
     echo 'Received data: ' . PHP_EOL;
     infoLog('Decoding data failed.');
+    var_dump($json);
+    exit;
+}
+
+// Sonderfall, falls Bezeichnung abweichend
+if (!isset($data->result->{$datasetName})) {
+    $datasetName = $alternativeDatasetName;
+}
+if (!isset($data->result->{$datasetName})) {
+    echo 'Requested dataset not found in response.' . PHP_EOL;
+    infoLog('Requested dataset not found in response.');
     var_dump($json);
     exit;
 }
