@@ -238,3 +238,13 @@ function formatFileSize(float $size) : string
     $length = strpos((string)$size, '.');
     return str_replace('.', ',', round($size, 3 - $length)) . ' ' . $sizes[$i];
 }
+
+if (file_exists('_internal.php')) {
+    require '_internal.php';
+}
+
+if (!function_exists('request_file')) {
+    function request_file(...$args) {
+        return file_get_contents(...$args);
+    }
+}

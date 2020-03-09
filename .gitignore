@@ -8,4 +8,5 @@
 
 # Ignore internal files
 /on-demand/trueFX*
+/cron/_internal.php
 *.log
